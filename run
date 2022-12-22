@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+./gradlew --quiet installDist
+
+export JAVA_OPTS="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8000"
+
+app/build/install/app/bin/app "$@"

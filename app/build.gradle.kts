@@ -12,6 +12,7 @@ plugins {
 
     // Apply the application plugin to add support for building a CLI application in Java.
     application
+    distribution
 }
 
 repositories {
@@ -38,5 +39,5 @@ dependencies {
 
 application {
     // Define the main class for the application.
-    mainClass.set("net.edmacdonald.craftinginterpreters.AppKt")
+    mainClass.set("net.edmacdonald.craftinginterpreters.LoxKt")
 }
