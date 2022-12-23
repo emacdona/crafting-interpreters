@@ -147,14 +147,15 @@ class Scanner(var source: String) {
         )
     }
 
-    private fun peekNext(): Char {
+    private fun peekNext(): Char =
         if (current + 1 >= source.length)
-            return 0.toChar()
-        return source[current + 1]
-    }
+            0.toChar()
+        else
+            source[current + 1]
 
     private fun identifier() {
-        while (isAlphaNumeric(peek())) advance()
+        while (isAlphaNumeric(peek()))
+            advance()
 
         addToken(
             keywords.getOrDefault(
