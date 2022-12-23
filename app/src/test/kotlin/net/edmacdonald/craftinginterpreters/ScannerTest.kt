@@ -18,8 +18,23 @@ class ScannerTest {
                 ),
                 Arguments.of(
                     "class foo < 1 + \"hello world\"\nbar = 10",
-                    listOf(CLASS, IDENTIFIER, LESS, NUMBER, PLUS, STRING,
-                    IDENTIFIER, EQUAL, NUMBER, EOF)
+                    listOf(
+                        CLASS, IDENTIFIER, LESS, NUMBER, PLUS, STRING,
+                        IDENTIFIER, EQUAL, NUMBER, EOF
+                    )
+                ),
+                Arguments.of(
+                    "(){},.-+;/*! != = == > >= < <= id \"str\" 123.456 and class else false fun for if nil or print return super this true var while",
+                    listOf(
+                        LEFT_PAREN, RIGHT_PAREN, LEFT_BRACE, RIGHT_BRACE,
+                        COMMA, DOT, MINUS, PLUS, SEMICOLON, SLASH, STAR,
+                        BANG, BANG_EQUAL, EQUAL, EQUAL_EQUAL,
+                        GREATER, GREATER_EQUAL, LESS, LESS_EQUAL,
+                        IDENTIFIER, STRING, NUMBER,
+                        AND, CLASS, ELSE, FALSE, FUN, FOR, IF, NIL, OR,
+                        PRINT, RETURN, SUPER, THIS, TRUE, VAR, WHILE,
+                        EOF
+                    )
                 )
             )
     }

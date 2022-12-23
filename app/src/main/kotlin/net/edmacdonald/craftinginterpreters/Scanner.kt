@@ -4,7 +4,7 @@ import net.edmacdonald.craftinginterpreters.TokenType.*
 
 class Scanner(var source: String) {
     companion object {
-        val keywords = mapOf<String, TokenType>(
+        val keywords = mapOf(
             "and" to AND,
             "class" to CLASS,
             "else" to ELSE,
@@ -35,13 +35,14 @@ class Scanner(var source: String) {
             scanToken()
         }
 
-        tokens.add(Token(TokenType.EOF, "", null, line))
+        tokens.add(Token(EOF, "", null, line))
         return tokens
     }
 
-    private fun isAtEnd(): Boolean = current >= source.length
+    private fun isAtEnd(): Boolean =
+        current >= source.length
 
-    private fun scanToken(): Unit {
+    private fun scanToken() {
         var c = advance()
         when (c) {
             '(' -> addToken(LEFT_PAREN)
@@ -85,13 +86,13 @@ class Scanner(var source: String) {
         }
     }
 
-    private fun advance(): Char = source[current++]
+    private fun advance(): Char =
+        source[current++]
 
-    private fun addToken(type: TokenType) {
+    private fun addToken(type: TokenType) =
         addToken(type, null)
-    }
 
-    private fun addToken(type: TokenType, literal: Any?): Unit {
+    private fun addToken(type: TokenType, literal: Any?) {
         val text = source.substring(start, current)
         tokens.add(Token(type, text, literal, line))
     }
@@ -103,11 +104,11 @@ class Scanner(var source: String) {
         return true
     }
 
-    private fun peek(): Char {
-        if (isAtEnd()) return 0.toChar()
+    private fun peek(): Char =
+        if (isAtEnd())
+            0.toChar()
         else
-            return source[current]
-    }
+            source[current]
 
     private fun string() {
         while (peek() != '"' && !isAtEnd()) {
@@ -128,7 +129,8 @@ class Scanner(var source: String) {
         addToken(STRING, value)
     }
 
-    private fun isDigit(c: Char): Boolean = c in '0'..'9'
+    private fun isDigit(c: Char): Boolean =
+        c in '0'..'9'
 
     private fun number() {
         while (isDigit(peek()))
@@ -170,5 +172,6 @@ class Scanner(var source: String) {
                 || (c in 'A'..'Z')
                 || c == '_'
 
-    private fun isAlphaNumeric(c: Char) = isAlpha(c) || isDigit(c)
+    private fun isAlphaNumeric(c: Char) =
+        isAlpha(c) || isDigit(c)
 }
