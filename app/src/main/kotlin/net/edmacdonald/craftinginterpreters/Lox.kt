@@ -8,10 +8,24 @@ import java.nio.file.Paths
 import kotlin.system.exitProcess
 
 class Lox {
-    companion object{
+    companion object {
         var hadError: Boolean = false
     }
 }
+
+/*
+fun main(args: Array<String>) {
+    val expression: Expr = Expr.Binary(
+        Expr.Unary(
+            Token(TokenType.MINUS, "-", null, 1), Expr.Literal(123)
+        ),
+        Token(TokenType.STAR, "*", null, 1), Expr.Grouping(
+            Expr.Literal(45.67)
+        )
+    )
+    println(AstPrinter().print(expression))
+}
+*/
 
 fun main(args: Array<String>) {
     if (args.size > 1) {
@@ -27,7 +41,7 @@ fun main(args: Array<String>) {
 fun runFile(path: String) {
     val bytes = Files.readAllBytes(Paths.get(path))
     run(String(bytes, Charset.defaultCharset()))
-    if(Lox.hadError) exitProcess(65)
+    if (Lox.hadError) exitProcess(65)
 }
 
 fun runPrompt() {
@@ -42,17 +56,17 @@ fun runPrompt() {
     }
 }
 
-fun run(source: String){
+fun run(source: String) {
     val scanner = Scanner(source)
     val tokens = scanner.scanTokens()
-    tokens.forEach{println(it)}
+    tokens.forEach { println(it) }
 }
 
-fun error(line: Int, message: String){
+fun error(line: Int, message: String) {
     report(line, "", message)
 }
 
-fun report(line: Int, where: String, message: String){
+fun report(line: Int, where: String, message: String) {
     println("[line ${line}] Error ${where}: ${message}")
     Lox.hadError = true
 }
