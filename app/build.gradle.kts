@@ -1,11 +1,17 @@
 // https://kotlinlang.org/docs/get-started-with-jvm-gradle-project.html#explore-the-build-script
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import net.edmacdonald.craftinginterpreters.gradle.ExpressionClassGenerator
 
 plugins {
     kotlin("jvm") version "1.7.21"
     application
     distribution
+
+    // https://plugins.gradle.org/plugin/org.barfuin.gradle.taskinfo
+    id("org.barfuin.gradle.taskinfo") version "2.0.0"
 }
+
+apply<ExpressionClassGenerator>()
 
 repositories {
     mavenCentral()
@@ -25,7 +31,19 @@ dependencies {
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.4.2")
 }
 
-tasks.test{
+task("srcDirs") {
+    doLast {
+        println("Source Sets:")
+        sourceSets.forEach {
+            println("\t${it.name}")
+            println("\t\tSource: ${it.allSource.srcDirs}")
+            println("\t\tOutput: ${it.output.classesDirs.files}")
+        }
+    }
+    dependsOn("generateExpressionClasses")
+}
+
+tasks.test {
     useJUnitPlatform()
 }
 
