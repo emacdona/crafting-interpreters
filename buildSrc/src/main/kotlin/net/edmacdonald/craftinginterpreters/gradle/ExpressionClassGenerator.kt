@@ -51,30 +51,47 @@ abstract class ExpressionClassGenerator : Plugin<Project> {
                 println("OutputDir: ${outputDir}")
                 println("SourceFile: ${sourceFile}")
                 outputDir.mkdirs()
+//@formatter:off
                 sourceFile.writeText(
                     """
-                        package net.edmacdonald.craftinginterpreters
+                    package net.edmacdonald.craftinginterpreters
                         
-                        abstract class Expr {
-                            ${
-                        classes.map {
+                    abstract class Expr {
+                        interface Visitor<R> {
+                        ${
+                            classes.map{
                             """
-                                data class ${it.name} (
-                                    ${
-                                it.fields.map {
-                                    """
-                                        val ${it.name}: ${it.type}"""
-                                        .trimEnd()
-                                }.joinToString(",\n")
-                            }
-                                ) : ${it.base}()
-                                """
-                                .trimEnd()
-                        }.joinToString("\n")
-                    }
+                            fun visit${it.name}(it: ${it.name}): R
+                            """.trimEnd()
+                            }.joinToString("\n")
                         }
-                        """.trimIndent()
+                        }
+                        
+                        abstract fun <R> accept(visitor: Visitor<R>): R
+                        ${
+                        classes.map {
+                        """
+                        data class ${it.name} (
+                        ${
+                            it.fields.map {
+                            """
+                            val ${it.name}: ${it.type}"""
+                            .trimEnd()
+                            }.joinToString(",\n")
+                        }
+                        ) : ${it.base}()
+                        {
+                            override fun <R> accept(visitor: Visitor<R>): R =
+                                visitor.visit${it.name}(this)
+                        }
+                        """
+                        .trimEnd()
+                        }.joinToString("\n")
+                        }
+                    }
+                    """.trimIndent()
                 )
+//@formatter:on
             }
         }
         project.tasks.named("compileKotlin") {
