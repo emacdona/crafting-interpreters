@@ -25,7 +25,7 @@ abstract class ExpressionClassGenerator : Plugin<Project> {
         ),
         ExprClass(
             "Literal", listOf(
-                Field("Any", "value")
+                Field("Any?", "value")
             )
         ),
         ExprClass(

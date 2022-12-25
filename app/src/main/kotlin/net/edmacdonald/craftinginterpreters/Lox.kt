@@ -10,6 +10,14 @@ import kotlin.system.exitProcess
 class Lox {
     companion object {
         var hadError: Boolean = false
+
+        fun error(token: Token, message: String) {
+            if (token.type == TokenType.EOF) {
+                report(token.line, " at end", message)
+            } else {
+                report(token.line, "at '${token.lexeme}'", message)
+            }
+        }
     }
 }
 
@@ -59,7 +67,18 @@ fun runPrompt() {
 fun run(source: String) {
     val scanner = Scanner(source)
     val tokens = scanner.scanTokens()
-    tokens.forEach { println(it) }
+
+    println("Tokens:")
+    tokens.forEach { println("\t${it}") }
+    println()
+
+    val parser = Parser(tokens)
+    val expr = parser.parse()
+
+    if(Lox.hadError) return
+
+    println("Parsed:")
+    println("\t${AstPrinter().print(expr!!)}")
 }
 
 fun error(line: Int, message: String) {
