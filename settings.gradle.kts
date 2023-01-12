@@ -9,3 +9,9 @@
 
 rootProject.name = "craftingInterpreters"
 include("app")
+
+pluginManagement {
+    // https://discuss.gradle.org/t/how-can-i-publish-to-maven-the-plugin-defined-at-buildsrc/42039/2
+    // https://docs.gradle.org/current/userguide/composite_builds.html#included_plugin_builds
+    includeBuild("./expressionClassGeneratorPlugin")
+}

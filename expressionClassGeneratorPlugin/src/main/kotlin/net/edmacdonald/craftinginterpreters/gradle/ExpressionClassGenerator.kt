@@ -2,15 +2,21 @@ package net.edmacdonald.craftinginterpreters.gradle
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.provider.ListProperty
+import org.gradle.api.provider.Property
 import org.gradle.api.tasks.SourceSetContainer
 import java.io.File
 
-abstract class ExpressionClassGenerator : Plugin<Project> {
+interface ExpressionClassGeneratorExtension {
+    val definitions: ListProperty<ExprClass>
+}
+
+abstract class ExpressionClassGeneratorPlugin : Plugin<Project> {
     companion object {
         val TASK_NAME = "generateExpressionClasses"
     }
 
-    var classes: MutableList<ExprClass> = mutableListOf(
+    var classes: List<ExprClass> = listOf(
         ExprClass(
             "Binary", listOf(
                 Field("Expr", "left"),
@@ -39,6 +45,11 @@ abstract class ExpressionClassGenerator : Plugin<Project> {
     override fun apply(project: Project) {
         val outputDir = File("${project.buildDir}/generated/main/kotlin")
         val sourceFile = File(outputDir, "Expr.kt")
+        val extension = project.extensions.create("expressionClasses", ExpressionClassGeneratorExtension::class.java)
+
+        extension.definitions.get().forEach{
+            d -> "Expression Class Name: ${println(d.name)}"
+        }
 
         val sourceSets = project.getProperties().get("sourceSets") as SourceSetContainer
         sourceSets

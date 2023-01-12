@@ -1,17 +1,12 @@
 // https://kotlinlang.org/docs/get-started-with-jvm-gradle-project.html#explore-the-build-script
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import net.edmacdonald.craftinginterpreters.gradle.ExpressionClassGenerator
 
 plugins {
     kotlin("jvm") version "1.7.21"
     application
     distribution
-
-    // https://plugins.gradle.org/plugin/org.barfuin.gradle.taskinfo
-    id("org.barfuin.gradle.taskinfo") version "2.0.0"
+    id("net.edmacdonald.craftingInterpreters.gradle.expressionClassGenerator")
 }
-
-apply<ExpressionClassGenerator>()
 
 repositories {
     mavenCentral()
@@ -19,8 +14,6 @@ repositories {
 
 dependencies {
     implementation("com.google.guava:guava:30.1.1-jre")
-    //testImplementation(kotlin("test-junit5"))
-    //testImplementation(kotlin("test-annotations-common"))
 
     // https://technology.lastminute.com/junit5-kotlin-and-gradle-dsl/
     testImplementation("io.mockk:mockk:1.9.3")
@@ -47,9 +40,8 @@ tasks.test {
     useJUnitPlatform()
 }
 
-tasks.withType<KotlinCompile> { // Settings for `KotlinCompile` tasks
-    // Kotlin compiler options
-    kotlinOptions.jvmTarget = "1.8" // Target version of generated JVM bytecode
+tasks.withType<KotlinCompile> {
+    kotlinOptions.jvmTarget = "1.8"
 }
 
 application {
