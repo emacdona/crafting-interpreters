@@ -9,6 +9,10 @@ repositories {
     mavenCentral()
 }
 
+dependencies {
+    implementation("io.arrow-kt:arrow-core:0.7.3")
+}
+
 gradlePlugin {
     plugins {
         create("expressionClassGenerator") {

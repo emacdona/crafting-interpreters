@@ -1,5 +1,7 @@
 package net.edmacdonald.craftinginterpreters.gradle
 
+import arrow.core.Option
+import arrow.core.getOrElse
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.provider.ListProperty
@@ -8,17 +10,17 @@ import org.gradle.api.tasks.SourceSetContainer
 import java.io.File
 
 private const val TASK_NAME = "generateExpressionClasses"
-private const val BASE_CLASS_NAME = "Expr"
 data class Field(
     val type: String,
     val name: String)
 data class ExprClass(
     val name: String,
     val fields: List<Field>,
-    val base: String = BASE_CLASS_NAME)
+    val base: Option<String> = Option.empty())
 interface ExpressionClassGeneratorExtension {
     val imports: ListProperty<String>
     val srcPackage: Property<String>
+    val expBaseClassName: Property<String>
     val definitions: ListProperty<ExprClass>
 }
 
@@ -42,6 +44,7 @@ abstract class ExpressionClassGeneratorPlugin : Plugin<Project> {
                 val classes = extension.definitions.get()
                 val imports = extension.imports.get()
                 val srcPackage = extension.srcPackage.get()
+                val expBaseClassName = extension.expBaseClassName.get()
 //@formatter:off
                 sourceFile.writeText(
                     """
@@ -55,7 +58,7 @@ abstract class ExpressionClassGeneratorPlugin : Plugin<Project> {
                         }.joinToString("")
                     }
                         
-                    abstract class $BASE_CLASS_NAME {
+                    abstract class $expBaseClassName {
                         interface Visitor<R> {${
                             classes.map{
                             """
@@ -76,7 +79,7 @@ abstract class ExpressionClassGeneratorPlugin : Plugin<Project> {
                             """.trimEnd()
                             }.joinToString(",")
                         }
-                        ) : ${it.base}() {
+                        ) : ${it.base.getOrElse { expBaseClassName }}() {
                             override fun <R> accept(visitor: Visitor<R>): R = visitor.visit${it.name}(this)
                         }
                         """

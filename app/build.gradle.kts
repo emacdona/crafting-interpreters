@@ -16,24 +16,28 @@ repositories {
 }
 
 the<ExpressionClassGeneratorExtension>().apply {
+    val expBaseClassName = "Expr"
+
     imports.set(
         listOf("net.edmacdonald.craftinginterpreters.scanner.Token")
     )
 
     srcPackage.set("net.edmacdonald.craftinginterpreters.parser")
 
+    this.expBaseClassName.set(expBaseClassName)
+
     definitions.set(
         listOf(
             ExprClass(
                 "Binary", listOf(
-                    Field("Expr", "left"),
+                    Field(expBaseClassName, "left"),
                     Field("Token", "operator"),
-                    Field("Expr", "right")
+                    Field(expBaseClassName, "right")
                 )
             ),
             ExprClass(
                 "Grouping", listOf(
-                    Field("Expr", "expression")
+                    Field(expBaseClassName, "expression")
                 )
             ),
             ExprClass(
@@ -44,7 +48,7 @@ the<ExpressionClassGeneratorExtension>().apply {
             ExprClass(
                 "Unary", listOf(
                     Field("Token", "operator"),
-                    Field("Expr", "right")
+                    Field(expBaseClassName, "right")
                 )
             )
         )
