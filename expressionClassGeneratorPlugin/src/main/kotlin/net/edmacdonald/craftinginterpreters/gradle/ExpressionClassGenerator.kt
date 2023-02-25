@@ -48,7 +48,7 @@ abstract class ExpressionClassGeneratorPlugin : Plugin<Project> {
 //@formatter:off
                 sourceFile.writeText(
                     """
-                    package ${srcPackage}
+                    package $srcPackage
                     
                     ${
                         imports.map { 
