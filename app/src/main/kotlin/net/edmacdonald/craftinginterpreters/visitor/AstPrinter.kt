@@ -1,4 +1,4 @@
-package net.edmacdonald.craftinginterpreters
+package net.edmacdonald.craftinginterpreters.visitor
 
 import net.edmacdonald.craftinginterpreters.parser.Expr
 
