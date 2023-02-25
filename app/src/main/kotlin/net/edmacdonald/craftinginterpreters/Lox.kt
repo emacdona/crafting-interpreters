@@ -1,5 +1,9 @@
 package net.edmacdonald.craftinginterpreters
 
+import net.edmacdonald.craftinginterpreters.parser.Parser
+import net.edmacdonald.craftinginterpreters.scanner.Scanner
+import net.edmacdonald.craftinginterpreters.scanner.Token
+import net.edmacdonald.craftinginterpreters.scanner.TokenType
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.nio.charset.Charset

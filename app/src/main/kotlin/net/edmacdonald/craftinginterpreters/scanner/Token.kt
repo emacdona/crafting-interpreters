@@ -1,4 +1,4 @@
-package net.edmacdonald.craftinginterpreters
+package net.edmacdonald.craftinginterpreters.scanner
 
 data class Token(
     val type: TokenType,

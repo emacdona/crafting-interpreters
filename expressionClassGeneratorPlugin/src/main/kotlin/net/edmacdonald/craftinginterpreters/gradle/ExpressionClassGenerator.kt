@@ -3,6 +3,7 @@ package net.edmacdonald.craftinginterpreters.gradle
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.provider.ListProperty
+import org.gradle.api.provider.Property
 import org.gradle.api.tasks.SourceSetContainer
 import java.io.File
 
@@ -16,6 +17,8 @@ data class ExprClass(
     val fields: List<Field>,
     val base: String = BASE_CLASS_NAME)
 interface ExpressionClassGeneratorExtension {
+    val imports: ListProperty<String>
+    val srcPackage: Property<String>
     val definitions: ListProperty<ExprClass>
 }
 
@@ -37,10 +40,20 @@ abstract class ExpressionClassGeneratorPlugin : Plugin<Project> {
                 println("SourceFile: ${sourceFile}")
                 outputDir.mkdirs()
                 val classes = extension.definitions.get()
+                val imports = extension.imports.get()
+                val srcPackage = extension.srcPackage.get()
 //@formatter:off
                 sourceFile.writeText(
                     """
-                    package net.edmacdonald.craftinginterpreters
+                    package ${srcPackage}
+                    
+                    ${
+                        imports.map { 
+                            """
+                            import $it
+                            """.trimIndent()
+                        }.joinToString("")
+                    }
                         
                     abstract class $BASE_CLASS_NAME {
                         interface Visitor<R> {${

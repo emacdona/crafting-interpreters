@@ -1,6 +1,6 @@
-package net.edmacdonald.craftinginterpreters
+package net.edmacdonald.craftinginterpreters.scanner
 
-import net.edmacdonald.craftinginterpreters.TokenType.*
+import net.edmacdonald.craftinginterpreters.scanner.TokenType.*
 
 class Scanner(var source: String) {
     companion object {
@@ -81,7 +81,7 @@ class Scanner(var source: String) {
                 } else if (isAlpha(c)) {
                     identifier()
                 } else {
-                    error(line, "Unexpected character")
+                    net.edmacdonald.craftinginterpreters.error(line, "Unexpected character")
                 }
         }
     }
@@ -118,7 +118,7 @@ class Scanner(var source: String) {
         }
 
         if (isAtEnd()) {
-            error(line, "Unterminated string.")
+            net.edmacdonald.craftinginterpreters.error(line, "Unterminated string.")
             return
         }
 

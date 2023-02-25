@@ -1,6 +1,9 @@
-package net.edmacdonald.craftinginterpreters
+package net.edmacdonald.craftinginterpreters.parser
 
-import net.edmacdonald.craftinginterpreters.TokenType.*
+import net.edmacdonald.craftinginterpreters.Lox
+import net.edmacdonald.craftinginterpreters.scanner.Token
+import net.edmacdonald.craftinginterpreters.scanner.TokenType
+import net.edmacdonald.craftinginterpreters.scanner.TokenType.*
 
 class Parser(val tokens: List<Token>) {
     var current: Int = 0

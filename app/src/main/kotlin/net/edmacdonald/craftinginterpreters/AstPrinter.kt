@@ -1,5 +1,7 @@
 package net.edmacdonald.craftinginterpreters
 
+import net.edmacdonald.craftinginterpreters.parser.Expr
+
 class AstPrinter : Expr.Visitor<String> {
     fun print(expr: Expr): String =
         expr.accept(this)

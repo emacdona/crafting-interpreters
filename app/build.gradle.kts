@@ -15,33 +15,41 @@ repositories {
     mavenCentral()
 }
 
-the<ExpressionClassGeneratorExtension>().definitions.set(
-    listOf(
-        ExprClass(
-            "Binary", listOf(
-                Field("Expr", "left"),
-                Field("Token", "operator"),
-                Field("Expr", "right")
-            )
-        ),
-        ExprClass(
-            "Grouping", listOf(
-                Field("Expr", "expression")
-            )
-        ),
-        ExprClass(
-            "Literal", listOf(
-                Field("Any?", "value")
-            )
-        ),
-        ExprClass(
-            "Unary", listOf(
-                Field("Token", "operator"),
-                Field("Expr", "right")
+the<ExpressionClassGeneratorExtension>().apply {
+    imports.set(
+        listOf("net.edmacdonald.craftinginterpreters.scanner.Token")
+    )
+
+    srcPackage.set("net.edmacdonald.craftinginterpreters.parser")
+
+    definitions.set(
+        listOf(
+            ExprClass(
+                "Binary", listOf(
+                    Field("Expr", "left"),
+                    Field("Token", "operator"),
+                    Field("Expr", "right")
+                )
+            ),
+            ExprClass(
+                "Grouping", listOf(
+                    Field("Expr", "expression")
+                )
+            ),
+            ExprClass(
+                "Literal", listOf(
+                    Field("Any?", "value")
+                )
+            ),
+            ExprClass(
+                "Unary", listOf(
+                    Field("Token", "operator"),
+                    Field("Expr", "right")
+                )
             )
         )
     )
-)
+}
 
 dependencies {
     implementation("com.google.guava:guava:30.1.1-jre")
