@@ -1,5 +1,8 @@
 // https://kotlinlang.org/docs/get-started-with-jvm-gradle-project.html#explore-the-build-script
+import net.edmacdonald.craftinginterpreters.gradle.ExpressionClassGeneratorExtension
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import net.edmacdonald.craftinginterpreters.gradle.ExprClass
+import net.edmacdonald.craftinginterpreters.gradle.Field
 
 plugins {
     kotlin("jvm") version "1.7.21"
@@ -11,6 +14,34 @@ plugins {
 repositories {
     mavenCentral()
 }
+
+the<ExpressionClassGeneratorExtension>().definitions.set(
+    listOf(
+        ExprClass(
+            "Binary", listOf(
+                Field("Expr", "left"),
+                Field("Token", "operator"),
+                Field("Expr", "right")
+            )
+        ),
+        ExprClass(
+            "Grouping", listOf(
+                Field("Expr", "expression")
+            )
+        ),
+        ExprClass(
+            "Literal", listOf(
+                Field("Any?", "value")
+            )
+        ),
+        ExprClass(
+            "Unary", listOf(
+                Field("Token", "operator"),
+                Field("Expr", "right")
+            )
+        )
+    )
+)
 
 dependencies {
     implementation("com.google.guava:guava:30.1.1-jre")
