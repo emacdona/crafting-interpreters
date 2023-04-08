@@ -10,24 +10,33 @@ import org.gradle.api.tasks.SourceSetContainer
 import java.io.File
 
 private const val TASK_NAME = "generateExpressionClasses"
+
 data class Field(
     val type: String,
-    val name: String)
-data class ExprClass(
+    val name: String
+)
+
+data class ProductionClass(
     val name: String,
     val fields: List<Field>,
-    val base: Option<String> = Option.empty())
+    val base: Option<String> = Option.empty()
+)
+
+data class Production(
+    val expBaseClassName: String,
+    val definitions: List<ProductionClass>
+)
+
 interface ExpressionClassGeneratorExtension {
     val imports: ListProperty<String>
     val srcPackage: Property<String>
-    val expBaseClassName: Property<String>
-    val definitions: ListProperty<ExprClass>
+    val productions: ListProperty<Production>
 }
 
 abstract class ExpressionClassGeneratorPlugin : Plugin<Project> {
     override fun apply(project: Project) {
         val outputDir = File("${project.buildDir}/generated/main/kotlin")
-        val sourceFile = File(outputDir, "Expr.kt")
+        val sourceFile = File(outputDir, "Grammar.kt")
         val extension = project.extensions.create("expressionClasses", ExpressionClassGeneratorExtension::class.java)
 
         val sourceSets = project.getProperties().get("sourceSets") as SourceSetContainer
@@ -41,54 +50,58 @@ abstract class ExpressionClassGeneratorPlugin : Plugin<Project> {
                 println("OutputDir: ${outputDir}")
                 println("SourceFile: ${sourceFile}")
                 outputDir.mkdirs()
-                val classes = extension.definitions.get()
+
                 val imports = extension.imports.get()
                 val srcPackage = extension.srcPackage.get()
-                val expBaseClassName = extension.expBaseClassName.get()
+
+                extension.productions.get().forEach { production ->
+                    val expBaseClassName = production.expBaseClassName
+                    val classes = production.definitions
 //@formatter:off
-                sourceFile.writeText(
-                    """
-                    package $srcPackage
-                    
-                    ${
-                        imports.map { 
-                            """
-                            import $it
-                            """.trimIndent()
-                        }.joinToString("")
-                    }
+                    sourceFile.writeText(
+                        """
+                        package $srcPackage
                         
-                    abstract class $expBaseClassName {
-                        interface Visitor<R> {${
-                            classes.map{
-                            """
-                            fun visit${it.name}(it: ${it.name}): R
-                            """.trimEnd()
+                        ${
+                            imports.map { 
+                                """
+                                import $it
+                                """.trimIndent()
                             }.joinToString("")
                         }
-                        }
-                        
-                        abstract fun <R> accept(visitor: Visitor<R>): R
-                        ${
-                        classes.map {
-                        """
-                        data class ${it.name} (${
-                            it.fields.map {
+                            
+                        abstract class $expBaseClassName {
+                            interface Visitor<R> {${
+                                classes.map{
+                                """
+                                fun visit${it.name}(it: ${it.name}): R
+                                """.trimEnd()
+                                }.joinToString("")
+                            }
+                            }
+                            
+                            abstract fun <R> accept(visitor: Visitor<R>): R
+                            ${
+                            classes.map {
                             """
-                            val ${it.name}: ${it.type}
-                            """.trimEnd()
-                            }.joinToString(",")
+                            data class ${it.name} (${
+                                it.fields.map {
+                                """
+                                val ${it.name}: ${it.type}
+                                """.trimEnd()
+                                }.joinToString(",")
+                            }
+                            ) : ${it.base.getOrElse { expBaseClassName }}() {
+                                override fun <R> accept(visitor: Visitor<R>): R = visitor.visit${it.name}(this)
+                            }
+                            """
+                            .trimEnd()
+                            }.joinToString("\n")
+                            }
                         }
-                        ) : ${it.base.getOrElse { expBaseClassName }}() {
-                            override fun <R> accept(visitor: Visitor<R>): R = visitor.visit${it.name}(this)
-                        }
-                        """
-                        .trimEnd()
-                        }.joinToString("\n")
-                        }
-                    }
-                    """.trimIndent()
-                )
+                        """.trimIndent()
+                    )
+                }
 //@formatter:on
             }
         }

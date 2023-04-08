@@ -1,8 +1,9 @@
 // https://kotlinlang.org/docs/get-started-with-jvm-gradle-project.html#explore-the-build-script
 import net.edmacdonald.craftinginterpreters.gradle.ExpressionClassGeneratorExtension
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import net.edmacdonald.craftinginterpreters.gradle.ExprClass
+import net.edmacdonald.craftinginterpreters.gradle.ProductionClass
 import net.edmacdonald.craftinginterpreters.gradle.Field
+import net.edmacdonald.craftinginterpreters.gradle.Production
 
 plugins {
     kotlin("jvm") version "1.7.21"
@@ -17,6 +18,7 @@ repositories {
 
 the<ExpressionClassGeneratorExtension>().apply {
     val expBaseClassName = "Expr"
+    val stmtBaseClassName = "Stmt"
 
     imports.set(
         listOf("net.edmacdonald.craftinginterpreters.scanner.Token")
@@ -24,31 +26,38 @@ the<ExpressionClassGeneratorExtension>().apply {
 
     srcPackage.set("net.edmacdonald.craftinginterpreters.parser")
 
-    this.expBaseClassName.set(expBaseClassName)
-
-    definitions.set(
+    productions.set(
         listOf(
-            ExprClass(
-                "Binary", listOf(
-                    Field(expBaseClassName, "left"),
-                    Field("Token", "operator"),
-                    Field(expBaseClassName, "right")
-                )
+            Production(
+                stmtBaseClassName,
+                listOf()
             ),
-            ExprClass(
-                "Grouping", listOf(
-                    Field(expBaseClassName, "expression")
-                )
-            ),
-            ExprClass(
-                "Literal", listOf(
-                    Field("Any?", "value")
-                )
-            ),
-            ExprClass(
-                "Unary", listOf(
-                    Field("Token", "operator"),
-                    Field(expBaseClassName, "right")
+            Production(
+                expBaseClassName,
+                listOf(
+                    ProductionClass(
+                        "Binary", listOf(
+                            Field(expBaseClassName, "left"),
+                            Field("Token", "operator"),
+                            Field(expBaseClassName, "right")
+                        )
+                    ),
+                    ProductionClass(
+                        "Grouping", listOf(
+                            Field(expBaseClassName, "expression")
+                        )
+                    ),
+                    ProductionClass(
+                        "Literal", listOf(
+                            Field("Any?", "value")
+                        )
+                    ),
+                    ProductionClass(
+                        "Unary", listOf(
+                            Field("Token", "operator"),
+                            Field(expBaseClassName, "right")
+                        )
+                    )
                 )
             )
         )
