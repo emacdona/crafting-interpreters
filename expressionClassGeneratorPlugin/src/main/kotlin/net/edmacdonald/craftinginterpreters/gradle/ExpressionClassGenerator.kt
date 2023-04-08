@@ -54,22 +54,22 @@ abstract class ExpressionClassGeneratorPlugin : Plugin<Project> {
                 val imports = extension.imports.get()
                 val srcPackage = extension.srcPackage.get()
 
-                extension.productions.get().forEach { production ->
+//@formatter:off
+                sourceFile.writeText(
+                    """
+                        package $srcPackage
+                    
+                    ${
+                        imports.map {
+                        """
+                        import $it
+                        """
+                        }.joinToString("")
+                    }
+                ${extension.productions.get().map { production ->
                     val expBaseClassName = production.expBaseClassName
                     val classes = production.definitions
-//@formatter:off
-                    sourceFile.writeText(
                         """
-                        package $srcPackage
-                        
-                        ${
-                            imports.map { 
-                                """
-                                import $it
-                                """.trimIndent()
-                            }.joinToString("")
-                        }
-                            
                         abstract class $expBaseClassName {
                             interface Visitor<R> {${
                                 classes.map{
@@ -96,12 +96,13 @@ abstract class ExpressionClassGeneratorPlugin : Plugin<Project> {
                             }
                             """
                             .trimEnd()
-                            }.joinToString("\n")
+                            }.joinToString("")
                             }
                         }
-                        """.trimIndent()
-                    )
-                }
+                        """
+                }.joinToString("\n")}
+                """.trimIndent()
+                )
 //@formatter:on
             }
         }
