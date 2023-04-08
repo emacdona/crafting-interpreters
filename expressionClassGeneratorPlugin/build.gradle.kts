@@ -15,9 +15,9 @@ dependencies {
 
 gradlePlugin {
     plugins {
-        create("expressionClassGenerator") {
-            id = "net.edmacdonald.craftingInterpreters.gradle.expressionClassGenerator"
-            implementationClass = "net.edmacdonald.craftinginterpreters.gradle.ExpressionClassGeneratorPlugin"
+        create("productionClassGenerator") {
+            id = "net.edmacdonald.craftingInterpreters.gradle.productionClassGenerator"
+            implementationClass = "net.edmacdonald.craftinginterpreters.gradle.ProductionClassGeneratorPlugin"
         }
     }
 }

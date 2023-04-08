@@ -9,7 +9,7 @@ import org.gradle.api.provider.Property
 import org.gradle.api.tasks.SourceSetContainer
 import java.io.File
 
-private const val TASK_NAME = "generateExpressionClasses"
+private const val TASK_NAME = "generateProductionClasses"
 
 data class Field(
     val type: String,
@@ -27,17 +27,17 @@ data class Production(
     val definitions: List<ProductionClass>
 )
 
-interface ExpressionClassGeneratorExtension {
+interface ProductionClassGeneratorExtension {
     val imports: ListProperty<String>
     val srcPackage: Property<String>
     val productions: ListProperty<Production>
 }
 
-abstract class ExpressionClassGeneratorPlugin : Plugin<Project> {
+abstract class ProductionClassGeneratorPlugin : Plugin<Project> {
     override fun apply(project: Project) {
         val outputDir = File("${project.buildDir}/generated/main/kotlin")
         val sourceFile = File(outputDir, "Grammar.kt")
-        val extension = project.extensions.create("expressionClasses", ExpressionClassGeneratorExtension::class.java)
+        val extension = project.extensions.create("productionClasses", ProductionClassGeneratorExtension::class.java)
 
         val sourceSets = project.getProperties().get("sourceSets") as SourceSetContainer
         sourceSets

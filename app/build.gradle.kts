@@ -1,5 +1,5 @@
 // https://kotlinlang.org/docs/get-started-with-jvm-gradle-project.html#explore-the-build-script
-import net.edmacdonald.craftinginterpreters.gradle.ExpressionClassGeneratorExtension
+import net.edmacdonald.craftinginterpreters.gradle.ProductionClassGeneratorExtension
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import net.edmacdonald.craftinginterpreters.gradle.ProductionClass
 import net.edmacdonald.craftinginterpreters.gradle.Field
@@ -9,14 +9,14 @@ plugins {
     kotlin("jvm") version "1.7.21"
     application
     distribution
-    id("net.edmacdonald.craftingInterpreters.gradle.expressionClassGenerator")
+    id("net.edmacdonald.craftingInterpreters.gradle.productionClassGenerator")
 }
 
 repositories {
     mavenCentral()
 }
 
-the<ExpressionClassGeneratorExtension>().apply {
+the<ProductionClassGeneratorExtension>().apply {
     val expBaseClassName = "Expr"
     val stmtBaseClassName = "Stmt"
 
@@ -85,7 +85,7 @@ task("srcDirs") {
             println("\t\tOutput: ${it.output.classesDirs.files}")
         }
     }
-    dependsOn("generateExpressionClasses")
+    dependsOn("generateProductionClasses")
 }
 
 tasks.test {
