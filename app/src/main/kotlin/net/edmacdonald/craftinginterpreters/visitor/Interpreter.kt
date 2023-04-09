@@ -1,6 +1,7 @@
 package net.edmacdonald.craftinginterpreters.visitor
 
 import net.edmacdonald.craftinginterpreters.parser.Expr
+import net.edmacdonald.craftinginterpreters.scanner.Token
 import net.edmacdonald.craftinginterpreters.scanner.TokenType
 
 class Interpreter : Expr.Visitor<Any?> {
@@ -40,7 +41,7 @@ class Interpreter : Expr.Visitor<Any?> {
                     TokenType.LESS_EQUAL -> lval <= rval
                     TokenType.BANG_EQUAL -> !isEqual(left, right)
                     TokenType.EQUAL_EQUAL -> isEqual(left, right)
-                    else -> throw RuntimeException("unknown operator for types")
+                    else -> throw RuntimeError(operator, "unknown operator for types")
                 }
 
             (lval is String && rval is String) ->
@@ -48,14 +49,14 @@ class Interpreter : Expr.Visitor<Any?> {
                     TokenType.PLUS -> lval + rval
                     TokenType.BANG_EQUAL -> !isEqual(left, right)
                     TokenType.EQUAL_EQUAL -> isEqual(left, right)
-                    else -> throw RuntimeException("unknown operator for types")
+                    else -> throw RuntimeError(operator, "unknown operator for types")
                 }
 
             else ->
                 when (operator.type) {
                     TokenType.BANG_EQUAL -> !isEqual(left, right)
                     TokenType.EQUAL_EQUAL -> isEqual(left, right)
-                    else -> throw RuntimeException("unknown operator for types")
+                    else -> throw RuntimeError(operator, "unknown operator for types")
                 }
         }
     }
@@ -75,15 +76,24 @@ class Interpreter : Expr.Visitor<Any?> {
         val right = evaluate(expr.right)
 
         return when (expr.operator.type) {
-            TokenType.MINUS ->
-                when (right) {
-                    is Double -> -right
-                    else -> throw RuntimeException("Expected double")
-                }
+            TokenType.MINUS -> {
+                checkNumberOperand(expr.operator, right)
+                -(right as Double)
+            }
 
             TokenType.BANG -> !isTruthy(right)
-            else -> throw RuntimeException("Unexpected operator type")
+            else -> throw RuntimeError(expr.operator, "Unexpected operator type")
         }
+    }
+
+    private fun checkNumberOperand(operator: Token, operand: Any?) {
+        if (operand !is Double)
+            throw RuntimeError(operator, "Operand must be a number.")
+    }
+
+    private fun checkNumberOperands(operator: Token, left: Any?, right: Any?) {
+        if (left !is Double || right !is Double)
+            throw RuntimeError(operator, "Operands must be numbers.")
     }
 
     private fun evaluate(expr: Expr): Any? = expr.accept(this)
