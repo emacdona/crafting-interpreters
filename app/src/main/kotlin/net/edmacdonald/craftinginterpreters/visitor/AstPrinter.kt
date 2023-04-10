@@ -1,10 +1,15 @@
 package net.edmacdonald.craftinginterpreters.visitor
 
 import net.edmacdonald.craftinginterpreters.parser.Expr
+import net.edmacdonald.craftinginterpreters.parser.Stmt
 
-class AstPrinter : Expr.Visitor<String> {
-    fun print(expr: Expr): String =
-        expr.accept(this)
+class AstPrinter : Expr.Visitor<String>, Stmt.Visitor<String>{
+    fun print(statements: List<Stmt>): String =
+        "(program ${
+            statements
+                .map { stmt -> stmt.accept(this) }
+                .joinToString(" ")
+        })"
 
     private fun parenthesize(name: String, vararg exprs: Expr): String {
         val builder = StringBuilder()
@@ -15,6 +20,14 @@ class AstPrinter : Expr.Visitor<String> {
         }
         builder.append(")")
         return builder.toString()
+    }
+
+    override fun visitExpression(it: Stmt.Expression): String {
+        return parenthesize("expression", it.expression)
+    }
+
+    override fun visitPrint(it: Stmt.Print): String {
+        return parenthesize("print", it.expression)
     }
 
     override fun visitBinary(it: Expr.Binary): String =

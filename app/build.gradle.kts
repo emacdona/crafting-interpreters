@@ -30,7 +30,20 @@ the<ProductionClassGeneratorExtension>().apply {
         listOf(
             Production(
                 stmtBaseClassName,
-                listOf()
+                listOf(
+                    ProductionClass(
+                        "Expression",
+                        listOf(
+                            Field(expBaseClassName, "expression")
+                        )
+                    ),
+                    ProductionClass(
+                        "Print",
+                        listOf(
+                            Field(expBaseClassName, "expression")
+                        )
+                    )
+                )
             ),
             Production(
                 expBaseClassName,

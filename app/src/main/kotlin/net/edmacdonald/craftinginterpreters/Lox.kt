@@ -6,6 +6,7 @@ import net.edmacdonald.craftinginterpreters.scanner.Token
 import net.edmacdonald.craftinginterpreters.scanner.TokenType
 import net.edmacdonald.craftinginterpreters.visitor.AstPrinter
 import net.edmacdonald.craftinginterpreters.visitor.Interpreter
+import net.edmacdonald.craftinginterpreters.visitor.RuntimeError
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.nio.charset.Charset
@@ -16,6 +17,7 @@ import kotlin.system.exitProcess
 class Lox {
     companion object {
         var hadError: Boolean = false
+        var hadRuntimeError: Boolean = false
 
         fun error(token: Token, message: String) {
             if (token.type == TokenType.EOF) {
@@ -56,6 +58,7 @@ fun runFile(path: String) {
     val bytes = Files.readAllBytes(Paths.get(path))
     run(String(bytes, Charset.defaultCharset()))
     if (Lox.hadError) exitProcess(65)
+    if (Lox.hadRuntimeError) exitProcess(70)
 }
 
 fun runPrompt() {
@@ -79,18 +82,27 @@ fun run(source: String) {
     println()
 
     val parser = Parser(tokens)
-    val expr = parser.parse()
+    val statements = parser.parse()
 
     if(Lox.hadError) return
 
     println("Parsed:")
-    println("\t${AstPrinter().print(expr!!)}")
+    println("\t${AstPrinter().print(statements!!)}")
     println("Evaluated:")
-    println("\t${Interpreter().interpret(expr!!)}")
+    println("\t${Interpreter().interpret(statements!!)}")
 }
 
 fun error(line: Int, message: String) {
     report(line, "", message)
+}
+fun runtimeError(error: RuntimeError) {
+    System.err.println(
+        """
+        ${error.message}
+        [line ${error.token.line}]
+        """.trimIndent()
+    )
+    Lox.hadRuntimeError = true
 }
 
 fun report(line: Int, where: String, message: String) {

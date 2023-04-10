@@ -1,13 +1,24 @@
 package net.edmacdonald.craftinginterpreters.visitor
 
 import net.edmacdonald.craftinginterpreters.parser.Expr
+import net.edmacdonald.craftinginterpreters.parser.Stmt
+import net.edmacdonald.craftinginterpreters.runtimeError
 import net.edmacdonald.craftinginterpreters.scanner.Token
 import net.edmacdonald.craftinginterpreters.scanner.TokenType
 
-class Interpreter : Expr.Visitor<Any?> {
-    fun interpret(expression: Expr): String {
-        val value = evaluate(expression)
-        return stringify(value)
+class Interpreter : Expr.Visitor<Any?>, Stmt.Visitor<Unit> {
+    fun interpret(statements: List<Stmt>): Unit {
+        try {
+            statements.forEach { statement ->
+                execute(statement)
+            }
+        } catch (error: RuntimeError) {
+            runtimeError(error)
+        }
+    }
+
+    private fun execute(stmt: Stmt): Unit {
+        stmt.accept(this)
     }
 
     fun stringify(o: Any?): String =
@@ -23,6 +34,14 @@ class Interpreter : Expr.Visitor<Any?> {
 
             else -> o.toString()
         }
+
+    override fun visitExpression(stmt: Stmt.Expression) {
+        evaluate(stmt.expression)
+    }
+
+    override fun visitPrint(stmt: Stmt.Print) {
+        println(stringify(evaluate(stmt.expression)))
+    }
 
     override fun visitBinary(expr: Expr.Binary): Any? = expr.run {
         val lval = evaluate(left)
