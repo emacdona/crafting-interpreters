@@ -37,7 +37,11 @@ class AstPrinter : Expr.Visitor<String>, Stmt.Visitor<String>{
         parenthesize("group", it.expression)
 
     override fun visitLiteral(it: Expr.Literal): String =
-        if (it.value == null) "nil" else it.value.toString()
+        when(it.value){
+            null -> "nil"
+            is String -> "\"${it.value.toString()}\""
+            else -> it.value.toString()
+        }
 
     override fun visitUnary(it: Expr.Unary): String =
         parenthesize(it.operator.lexeme, it.right)
