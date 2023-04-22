@@ -23,7 +23,7 @@ class AstPrinter : Expr.Visitor<String>, Stmt.Visitor<String>{
     }
 
     override fun visitExpression(it: Stmt.Expression): String {
-        return parenthesize("expression", it.expression)
+        return it.expression.accept(this)
     }
 
     override fun visitPrint(it: Stmt.Print): String {
