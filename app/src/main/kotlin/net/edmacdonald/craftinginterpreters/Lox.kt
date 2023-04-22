@@ -74,22 +74,20 @@ fun runPrompt() {
 }
 
 fun run(source: String) {
-    val scanner = Scanner(source)
-    val tokens = scanner.scanTokens()
+    Scanner(source).scanTokens().let { tokens ->
+        println("Tokens:")
+        tokens.forEach { println("\t${it}") }
+        println()
 
-    println("Tokens:")
-    tokens.forEach { println("\t${it}") }
-    println()
+        Parser(tokens).parse().let { statements ->
+            if(Lox.hadError) return
 
-    val parser = Parser(tokens)
-    val statements = parser.parse()
-
-    if(Lox.hadError) return
-
-    println("Parsed:")
-    println("\t${AstPrinter().print(statements!!)}")
-    println("Evaluated:")
-    println("\t${Interpreter().interpret(statements!!)}")
+            println("Parsed:")
+            println("\t${AstPrinter().print(statements!!)}")
+            println("Evaluated:")
+            println("\t${Interpreter().interpret(statements!!)}")
+        }
+    }
 }
 
 fun error(line: Int, message: String) {
