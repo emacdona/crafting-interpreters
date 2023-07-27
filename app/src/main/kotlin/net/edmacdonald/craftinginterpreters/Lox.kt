@@ -75,7 +75,7 @@ fun runPrompt() {
         }
         catch (e: Exception ){
             when(e){
-               is ParseException, is RuntimeException -> print("ERROR: ${e.message}")
+               is ParseException, is RuntimeException -> println("ERROR: ${e.message}")
                else -> throw e
             }
         }
