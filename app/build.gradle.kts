@@ -42,6 +42,13 @@ the<ProductionClassGeneratorExtension>().apply {
                         listOf(
                             Field(expBaseClassName, "expression")
                         )
+                    ),
+                    ProductionClass(
+                        "Var",
+                        listOf(
+                            Field("Token", "name"),
+                            Field("Expr?", "initializer")
+                        )
                     )
                 )
             ),
@@ -49,26 +56,36 @@ the<ProductionClassGeneratorExtension>().apply {
                 expBaseClassName,
                 listOf(
                     ProductionClass(
-                        "Binary", listOf(
+                        "Binary",
+                        listOf(
                             Field(expBaseClassName, "left"),
                             Field("Token", "operator"),
                             Field(expBaseClassName, "right")
                         )
                     ),
                     ProductionClass(
-                        "Grouping", listOf(
+                        "Grouping",
+                        listOf(
                             Field(expBaseClassName, "expression")
                         )
                     ),
                     ProductionClass(
-                        "Literal", listOf(
+                        "Literal",
+                        listOf(
                             Field("Any?", "value")
                         )
                     ),
                     ProductionClass(
-                        "Unary", listOf(
+                        "Unary",
+                        listOf(
                             Field("Token", "operator"),
                             Field(expBaseClassName, "right")
+                        )
+                    ),
+                    ProductionClass(
+                        "Variable",
+                        listOf(
+                            Field("Token", "name")
                         )
                     )
                 )

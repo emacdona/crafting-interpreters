@@ -11,12 +11,23 @@ class AstPrinter : Expr.Visitor<String>, Stmt.Visitor<String>{
                 .joinToString(" ")
         })"
 
-    private fun parenthesize(name: String, vararg exprs: Expr): String {
+    private fun parenthesize(names: List<String>, vararg exprs: Expr?): String =
+        parenthesize(names.joinToString(separator = " "), exprs.asList())
+
+    private fun parenthesize(name: String, vararg exprs: Expr?): String =
+        parenthesize(name, exprs.asList())
+
+    private fun parenthesize(name: String, exprs: List<Expr?>): String {
         val builder = StringBuilder()
         builder.append("(").append(name)
         for (expr in exprs) {
             builder.append(" ")
-            builder.append(expr.accept(this))
+            builder.append(
+                when (expr) {
+                    null -> "nil"
+                    else -> expr.accept(this)
+                }
+            )
         }
         builder.append(")")
         return builder.toString()
@@ -45,4 +56,9 @@ class AstPrinter : Expr.Visitor<String>, Stmt.Visitor<String>{
 
     override fun visitUnary(it: Expr.Unary): String =
         parenthesize(it.operator.lexeme, it.right)
+
+    override fun visitVar(it: Stmt.Var): String =
+        parenthesize(listOf("var", it.name.lexeme), it.initializer)
+
+    override fun visitVariable(it: Expr.Variable): String = it.name.lexeme
 }

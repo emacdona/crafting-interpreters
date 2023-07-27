@@ -12,6 +12,7 @@ import java.io.InputStreamReader
 import java.nio.charset.Charset
 import java.nio.file.Files
 import java.nio.file.Paths
+import java.text.ParseException
 import kotlin.system.exitProcess
 
 class Lox {
@@ -66,10 +67,18 @@ fun runPrompt() {
     val reader = BufferedReader(input)
 
     while (true) {
-        print("> ")
-        val line = reader.readLine() ?: break
-        run(line)
-        Lox.hadError = false
+        try {
+            print("> ")
+            val line = reader.readLine() ?: break
+            run(line)
+            Lox.hadError = false
+        }
+        catch (e: Exception ){
+            when(e){
+               is ParseException, is RuntimeException -> print("ERROR: ${e.message}")
+               else -> throw e
+            }
+        }
     }
 }
 

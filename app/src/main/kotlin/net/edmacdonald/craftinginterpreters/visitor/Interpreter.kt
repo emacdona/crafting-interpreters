@@ -1,12 +1,13 @@
 package net.edmacdonald.craftinginterpreters.visitor
 
+import net.edmacdonald.craftinginterpreters.environment.Environment
 import net.edmacdonald.craftinginterpreters.parser.Expr
 import net.edmacdonald.craftinginterpreters.parser.Stmt
 import net.edmacdonald.craftinginterpreters.runtimeError
 import net.edmacdonald.craftinginterpreters.scanner.Token
 import net.edmacdonald.craftinginterpreters.scanner.TokenType
 
-class Interpreter : Expr.Visitor<Any?>, Stmt.Visitor<Unit> {
+class Interpreter(val environment: Environment = Environment()) : Expr.Visitor<Any?>, Stmt.Visitor<Unit> {
     fun interpret(statements: List<Stmt>): Unit {
         try {
             statements.forEach { statement ->
@@ -34,6 +35,18 @@ class Interpreter : Expr.Visitor<Any?>, Stmt.Visitor<Unit> {
 
             else -> o.toString()
         }
+
+    override fun visitVar(stmt: Stmt.Var) {
+        environment.define(
+            stmt.name.lexeme,
+            if (stmt.initializer != null)
+                evaluate(stmt.initializer)
+            else
+                null
+        )
+    }
+
+    override fun visitVariable(expr: Expr.Variable): Any? = environment.get(expr.name)
 
     override fun visitExpression(stmt: Stmt.Expression) {
         evaluate(stmt.expression)
