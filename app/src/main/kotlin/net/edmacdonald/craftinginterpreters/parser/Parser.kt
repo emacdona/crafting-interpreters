@@ -20,23 +20,30 @@ class Parser(val tokens: List<Token>) {
         */
         val statements: MutableList<Stmt> = mutableListOf()
         while (!isAtEnd()) {
-            statements += declaration()
+            declaration()?.let {
+                statements += it
+            }
         }
         return statements
     }
 
-    private fun declaration(): Stmt =
-        if (match(VAR))
-            varDeclaration()
-        else
-            statement()
+    private fun declaration(): Stmt? =
+        try {
+            if (match(VAR))
+                varDeclaration()
+            else
+                statement()
+        } catch (error: ParseError) {
+            synchronize()
+            null
+        }
 
     private fun varDeclaration(): Stmt {
         val name: Token = consume(IDENTIFIER, "Expect variable name.")
 
         var initializer: Expr? = null;
 
-        if(match(EQUAL))
+        if (match(EQUAL))
             initializer = expression()
 
         consume(SEMICOLON, "Expect ';' after variable declaration.")
