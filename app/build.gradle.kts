@@ -56,6 +56,13 @@ the<ProductionClassGeneratorExtension>().apply {
                 expBaseClassName,
                 listOf(
                     ProductionClass(
+                        "Assign",
+                        listOf(
+                            Field("Token", "name"),
+                            Field(expBaseClassName, "value")
+                        )
+                    ),
+                    ProductionClass(
                         "Binary",
                         listOf(
                             Field(expBaseClassName, "left"),

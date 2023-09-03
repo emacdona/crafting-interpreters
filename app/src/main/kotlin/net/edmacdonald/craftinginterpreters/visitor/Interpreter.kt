@@ -56,6 +56,11 @@ class Interpreter(val environment: Environment = Environment()) : Expr.Visitor<A
         println(stringify(evaluate(stmt.expression)))
     }
 
+    override fun visitAssign(expr: Expr.Assign): Any? =
+        evaluate(expr.value).also { value ->
+            environment.assign(expr.name, value)
+        }
+
     override fun visitBinary(expr: Expr.Binary): Any? = expr.run {
         val lval = evaluate(left)
         val rval = evaluate(right)

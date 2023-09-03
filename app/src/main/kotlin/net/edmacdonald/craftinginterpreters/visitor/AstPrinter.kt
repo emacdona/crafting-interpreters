@@ -41,6 +41,10 @@ class AstPrinter : Expr.Visitor<String>, Stmt.Visitor<String>{
         return parenthesize("print", it.expression)
     }
 
+    override fun visitAssign(it: Expr.Assign): String {
+        return parenthesize(listOf("=", it.name.lexeme), it.value)
+    }
+
     override fun visitBinary(it: Expr.Binary): String =
         parenthesize(it.operator.lexeme, it.left, it.right)
 
