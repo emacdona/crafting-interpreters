@@ -11,13 +11,14 @@ class Parser(val tokens: List<Token>) {
     private class ParseError : RuntimeException()
 
     fun parse(): List<Stmt> =
-        mutableListOf<Stmt>().also { statements ->
-            while (!isAtEnd()) {
-                declaration()?.let {
-                    statements += it
+        mutableListOf<Stmt>()
+            .also { statements ->
+                while (!isAtEnd()) {
+                    declaration()?.let {
+                        statements += it
+                    }
                 }
             }
-        }
 
     private fun declaration(): Stmt? =
         try {
