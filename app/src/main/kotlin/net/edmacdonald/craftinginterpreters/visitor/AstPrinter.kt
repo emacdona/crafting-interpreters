@@ -33,6 +33,20 @@ class AstPrinter : Expr.Visitor<String>, Stmt.Visitor<String> {
         return builder.toString()
     }
 
+    override fun visitIf(it: Stmt.If): String {
+        return parenthesize(
+            mutableListOf(
+                "if",
+                it.condition.accept(this),
+                it.thenBranch.accept(this)
+            ).also { l ->
+                if (it.elseBranch != null) {
+                    l += it.elseBranch.accept(this)
+                }
+            }
+        )
+    }
+
     override fun visitBlock(it: Stmt.Block): String {
         return parenthesize(
             mutableListOf("block") +

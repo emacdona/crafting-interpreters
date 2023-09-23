@@ -48,6 +48,13 @@ class Interpreter(var environment: Environment = Environment()) : Expr.Visitor<A
 
     override fun visitVariable(expr: Expr.Variable): Any? = environment.get(expr.name)
 
+    override fun visitIf(it: Stmt.If) {
+        if(isTruthy(evaluate(it.condition)))
+            execute(it.thenBranch)
+        else
+            it.elseBranch?.let { execute(it) }
+    }
+
     override fun visitBlock(it: Stmt.Block) =
         executeBlock(it.statements, Environment(environment))
 

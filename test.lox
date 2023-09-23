@@ -22,3 +22,18 @@ print a;
 
 print "A is: ";
 print a;
+
+if(2>1) {
+   print "'if' with no 'else' works.";
+}
+
+if(1>2) {
+   print "'if' with no 'else' doesn't work.";
+}
+
+if(1>2) {
+   print "'if' with no 'else' doesn't work.";
+}
+else {
+   print "'else' works.";
+}

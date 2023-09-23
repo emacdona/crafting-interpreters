@@ -45,6 +45,7 @@ class Parser(val tokens: List<Token>) {
 
     private fun statement(): Stmt =
         when {
+            match(IF) -> ifStatement()
             match(PRINT) -> printStatement()
             match(LEFT_BRACE) -> Stmt.Block(block())
             else -> expressionStatement()
@@ -52,13 +53,24 @@ class Parser(val tokens: List<Token>) {
 
     private fun block(): List<Stmt> =
         mutableListOf<Stmt>().also {
-            while(!check(RIGHT_BRACE) && !isAtEnd()) {
+            while (!check(RIGHT_BRACE) && !isAtEnd()) {
                 declaration()?.let { stmt ->
                     it += stmt
                 }
             }
             consume(RIGHT_BRACE, "Expect '}' after block.")
         }
+
+    private fun ifStatement(): Stmt {
+        consume(LEFT_PAREN, "Expect '(' after 'if'.")
+        val condition = expression()
+        consume(RIGHT_PAREN, "Expect ')' after if condition.")
+
+        val thenBranch = statement()
+        var elseBranch: Stmt? = if (match(ELSE)) statement() else null
+
+        return Stmt.If(condition, thenBranch, elseBranch)
+    }
 
     private fun printStatement(): Stmt {
         val value = expression()

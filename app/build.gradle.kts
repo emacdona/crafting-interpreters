@@ -20,6 +20,7 @@ the<ProductionClassGeneratorExtension>().apply {
     val expBaseClassName = "Expr"
     val stmtBaseClassName = "Stmt"
     fun listOfType(type: String) = "List<${type}>"
+    fun nullableOfType(type: String) = "${type}?"
 
     imports.set(
         listOf("net.edmacdonald.craftinginterpreters.scanner.Token")
@@ -32,6 +33,14 @@ the<ProductionClassGeneratorExtension>().apply {
             Production(
                 stmtBaseClassName,
                 listOf(
+                    ProductionClass(
+                        "If",
+                        listOf(
+                            Field(expBaseClassName, "condition"),
+                            Field(stmtBaseClassName, "thenBranch"),
+                            Field(nullableOfType(stmtBaseClassName), "elseBranch")
+                        )
+                    ),
                     ProductionClass(
                         "Block",
                         listOf(
