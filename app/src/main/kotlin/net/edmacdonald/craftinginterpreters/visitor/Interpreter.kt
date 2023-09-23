@@ -7,7 +7,7 @@ import net.edmacdonald.craftinginterpreters.runtimeError
 import net.edmacdonald.craftinginterpreters.scanner.Token
 import net.edmacdonald.craftinginterpreters.scanner.TokenType
 
-class Interpreter(val environment: Environment = Environment()) : Expr.Visitor<Any?>, Stmt.Visitor<Unit> {
+class Interpreter(var environment: Environment = Environment()) : Expr.Visitor<Any?>, Stmt.Visitor<Unit> {
     fun interpret(statements: List<Stmt>): Unit {
         try {
             statements.forEach { statement ->
@@ -47,6 +47,21 @@ class Interpreter(val environment: Environment = Environment()) : Expr.Visitor<A
     }
 
     override fun visitVariable(expr: Expr.Variable): Any? = environment.get(expr.name)
+
+    override fun visitBlock(it: Stmt.Block) =
+        executeBlock(it.statements, Environment(environment))
+
+    private fun executeBlock(statements: List<Stmt>, environment: Environment): Unit {
+        val previous = this.environment
+        try {
+            this.environment = environment
+            statements.forEach { statement ->
+                execute(statement)
+            }
+        } finally {
+            this.environment = previous
+        }
+    }
 
     override fun visitExpression(stmt: Stmt.Expression) {
         evaluate(stmt.expression)

@@ -3,7 +3,7 @@ package net.edmacdonald.craftinginterpreters.visitor
 import net.edmacdonald.craftinginterpreters.parser.Expr
 import net.edmacdonald.craftinginterpreters.parser.Stmt
 
-class AstPrinter : Expr.Visitor<String>, Stmt.Visitor<String>{
+class AstPrinter : Expr.Visitor<String>, Stmt.Visitor<String> {
     fun print(statements: List<Stmt>): String =
         "(program ${
             statements
@@ -33,6 +33,13 @@ class AstPrinter : Expr.Visitor<String>, Stmt.Visitor<String>{
         return builder.toString()
     }
 
+    override fun visitBlock(it: Stmt.Block): String {
+        return parenthesize(
+            mutableListOf("block") +
+                    it.statements.map { stmt -> stmt.accept(this) }
+        )
+    }
+
     override fun visitExpression(it: Stmt.Expression): String {
         return it.expression.accept(this)
     }
@@ -52,7 +59,7 @@ class AstPrinter : Expr.Visitor<String>, Stmt.Visitor<String>{
         parenthesize("group", it.expression)
 
     override fun visitLiteral(it: Expr.Literal): String =
-        when(it.value){
+        when (it.value) {
             null -> "nil"
             is String -> "\"${it.value.toString()}\""
             else -> it.value.toString()

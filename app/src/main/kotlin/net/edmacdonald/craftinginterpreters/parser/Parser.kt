@@ -44,10 +44,21 @@ class Parser(val tokens: List<Token>) {
     }
 
     private fun statement(): Stmt =
-        if (match(PRINT))
-            printStatement()
-        else
-            expressionStatement()
+        when {
+            match(PRINT) -> printStatement()
+            match(LEFT_BRACE) -> Stmt.Block(block())
+            else -> expressionStatement()
+        }
+
+    private fun block(): List<Stmt> =
+        mutableListOf<Stmt>().also {
+            while(!check(RIGHT_BRACE) && !isAtEnd()) {
+                declaration()?.let { stmt ->
+                    it += stmt
+                }
+            }
+            consume(RIGHT_BRACE, "Expect '}' after block.")
+        }
 
     private fun printStatement(): Stmt {
         val value = expression()

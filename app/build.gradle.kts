@@ -1,9 +1,9 @@
 // https://kotlinlang.org/docs/get-started-with-jvm-gradle-project.html#explore-the-build-script
-import net.edmacdonald.craftinginterpreters.gradle.ProductionClassGeneratorExtension
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import net.edmacdonald.craftinginterpreters.gradle.ProductionClass
 import net.edmacdonald.craftinginterpreters.gradle.Field
 import net.edmacdonald.craftinginterpreters.gradle.Production
+import net.edmacdonald.craftinginterpreters.gradle.ProductionClass
+import net.edmacdonald.craftinginterpreters.gradle.ProductionClassGeneratorExtension
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     kotlin("jvm") version "1.7.21"
@@ -19,6 +19,7 @@ repositories {
 the<ProductionClassGeneratorExtension>().apply {
     val expBaseClassName = "Expr"
     val stmtBaseClassName = "Stmt"
+    fun listOfType(type: String) = "List<${type}>"
 
     imports.set(
         listOf("net.edmacdonald.craftinginterpreters.scanner.Token")
@@ -31,6 +32,12 @@ the<ProductionClassGeneratorExtension>().apply {
             Production(
                 stmtBaseClassName,
                 listOf(
+                    ProductionClass(
+                        "Block",
+                        listOf(
+                            Field(listOfType(stmtBaseClassName), "statements")
+                        )
+                    ),
                     ProductionClass(
                         "Expression",
                         listOf(

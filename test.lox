@@ -8,3 +8,17 @@ print "Value of a is: ";
 print a;
 print a = 20;
 print a;
+
+{
+   var a = 30;
+   print "A is: ";
+   print a;
+   {
+      var a = 40;
+      print "A is: ";
+      print a;
+   }
+}
+
+print "A is: ";
+print a;
