@@ -94,5 +94,12 @@ class AstPrinter : Expr.Visitor<String>, Stmt.Visitor<String> {
     override fun visitVar(it: Stmt.Var): String =
         parenthesize(listOf("var", it.name.lexeme), it.initializer)
 
+    override fun visitWhile(it: Stmt.While): String =
+        parenthesize(listOf(
+            "while",
+            it.condition.accept(this),
+            it.body.accept(this)
+        ))
+
     override fun visitVariable(it: Expr.Variable): String = it.name.lexeme
 }

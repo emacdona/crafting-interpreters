@@ -43,10 +43,20 @@ class Parser(val tokens: List<Token>) {
         return Stmt.Var(name, initializer)
     }
 
+    private fun whileStatement(): Stmt {
+        consume(LEFT_PAREN, "Expect '(' after 'while'.")
+        val condition = expression()
+        consume(RIGHT_PAREN, "Expect ')' after condition.")
+        val body = statement()
+
+        return Stmt.While(condition, body)
+    }
+
     private fun statement(): Stmt =
         when {
             match(IF) -> ifStatement()
             match(PRINT) -> printStatement()
+            match(WHILE) -> whileStatement()
             match(LEFT_BRACE) -> Stmt.Block(block())
             else -> expressionStatement()
         }

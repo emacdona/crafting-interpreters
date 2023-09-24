@@ -43,3 +43,9 @@ print nil or 1;
 
 print "nil and 1";
 print nil and 1;
+
+var i=0;
+while(i < 10){
+   print i;
+   i = i+1;
+}

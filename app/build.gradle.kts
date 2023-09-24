@@ -60,6 +60,13 @@ the<ProductionClassGeneratorExtension>().apply {
                         )
                     ),
                     ProductionClass(
+                        "While",
+                        listOf(
+                            Field(expBaseClassName, "condition"),
+                            Field(stmtBaseClassName, "body")
+                        )
+                    ),
+                    ProductionClass(
                         "Var",
                         listOf(
                             Field("Token", "name"),

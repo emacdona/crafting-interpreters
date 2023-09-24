@@ -46,6 +46,12 @@ class Interpreter(var environment: Environment = Environment()) : Expr.Visitor<A
         )
     }
 
+    override fun visitWhile(it: Stmt.While) {
+        while (isTruthy(evaluate(it.condition))) {
+            execute(it.body)
+        }
+    }
+
     override fun visitVariable(expr: Expr.Variable): Any? = environment.get(expr.name)
 
     override fun visitIf(it: Stmt.If) {
