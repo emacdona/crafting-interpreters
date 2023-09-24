@@ -79,6 +79,15 @@ class AstPrinter : Expr.Visitor<String>, Stmt.Visitor<String> {
             else -> it.value.toString()
         }
 
+    override fun visitLogical(it: Expr.Logical): String =
+        parenthesize(
+            listOf(
+                it.operator.lexeme,
+                it.left.accept(this),
+                it.right.accept(this)
+            )
+        )
+
     override fun visitUnary(it: Expr.Unary): String =
         parenthesize(it.operator.lexeme, it.right)
 

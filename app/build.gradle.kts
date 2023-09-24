@@ -99,6 +99,14 @@ the<ProductionClassGeneratorExtension>().apply {
                         )
                     ),
                     ProductionClass(
+                        "Logical",
+                        listOf(
+                            Field(expBaseClassName, "left"),
+                            Field("Token", "operator"),
+                            Field(expBaseClassName, "right")
+                        )
+                    ),
+                    ProductionClass(
                         "Unary",
                         listOf(
                             Field("Token", "operator"),

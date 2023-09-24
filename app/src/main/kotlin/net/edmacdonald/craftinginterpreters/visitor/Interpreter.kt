@@ -49,7 +49,7 @@ class Interpreter(var environment: Environment = Environment()) : Expr.Visitor<A
     override fun visitVariable(expr: Expr.Variable): Any? = environment.get(expr.name)
 
     override fun visitIf(it: Stmt.If) {
-        if(isTruthy(evaluate(it.condition)))
+        if (isTruthy(evaluate(it.condition)))
             execute(it.thenBranch)
         else
             it.elseBranch?.let { execute(it) }
@@ -130,6 +130,22 @@ class Interpreter(var environment: Environment = Environment()) : Expr.Visitor<A
     override fun visitGrouping(expr: Expr.Grouping): Any? = evaluate(expr.expression)
 
     override fun visitLiteral(expr: Expr.Literal): Any? = expr.value
+
+    override fun visitLogical(it: Expr.Logical): Any? {
+        val left = evaluate(it.left)
+
+        return when (it.operator.type) {
+            TokenType.OR -> when {
+                isTruthy(left) -> left
+                else -> evaluate(it.right)
+            }
+
+            else -> when {
+                !isTruthy(left) -> left
+                else -> evaluate(it.right)
+            }
+        }
+    }
 
     override fun visitUnary(expr: Expr.Unary): Any? {
         val right = evaluate(expr.right)

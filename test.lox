@@ -37,3 +37,9 @@ if(1>2) {
 else {
    print "'else' works.";
 }
+
+print "nil or 1";
+print nil or 1;
+
+print "nil and 1";
+print nil and 1;
