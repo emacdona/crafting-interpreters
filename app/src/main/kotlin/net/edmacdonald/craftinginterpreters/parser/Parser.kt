@@ -54,12 +54,53 @@ class Parser(val tokens: List<Token>) {
 
     private fun statement(): Stmt =
         when {
+            match(FOR) -> forStatement()
             match(IF) -> ifStatement()
             match(PRINT) -> printStatement()
             match(WHILE) -> whileStatement()
             match(LEFT_BRACE) -> Stmt.Block(block())
             else -> expressionStatement()
         }
+
+    private fun forStatement(): Stmt {
+        consume(LEFT_PAREN, "Expect '(' after 'for'.")
+
+        val initializer = when {
+            match(SEMICOLON) -> null
+            match(VAR) -> varDeclaration()
+            else -> expressionStatement()
+        }
+
+        var condition = when {
+            !check(SEMICOLON) -> expression()
+            else -> null
+        }
+
+        consume(SEMICOLON, "Expect ';' after loop condition.")
+
+        val increment = when {
+            !check(RIGHT_PAREN) -> expression()
+            else -> null
+        }
+
+        consume(RIGHT_PAREN, "Expect ')' after for clauses.")
+
+        var body = statement()
+
+        increment?.let {
+            body = Stmt.Block(listOf(body, Stmt.Expression(it)))
+        }
+
+        condition = condition ?: Expr.Literal(true)
+
+        body = Stmt.While(condition, body)
+
+        initializer?.let {
+            body = Stmt.Block(listOf(it, body))
+        }
+
+        return body
+    }
 
     private fun block(): List<Stmt> =
         mutableListOf<Stmt>().also {
