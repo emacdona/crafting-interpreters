@@ -54,3 +54,5 @@ print "For loop:";
 for(var i=0; i<2; i = i+1){
  print i;
 }
+
+print clock();

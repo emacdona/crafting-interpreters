@@ -7,7 +7,26 @@ import net.edmacdonald.craftinginterpreters.runtimeError
 import net.edmacdonald.craftinginterpreters.scanner.Token
 import net.edmacdonald.craftinginterpreters.scanner.TokenType
 
-class Interpreter(var environment: Environment = Environment()) : Expr.Visitor<Any?>, Stmt.Visitor<Unit> {
+interface LoxCallable {
+    fun call(interpreter: Interpreter, arguments: List<Any?>): Any?
+    fun arity(): Int
+}
+
+class Interpreter(
+    private val globals: Environment = Environment(),
+    private var environment: Environment = globals
+) : Expr.Visitor<Any?>, Stmt.Visitor<Unit> {
+
+    init {
+        globals.define("clock", object : LoxCallable {
+            override fun call(interpreter: Interpreter, arguments: List<Any?>): Any? =
+                System.currentTimeMillis() / 1000.0
+
+            override fun arity(): Int = 0
+            override fun toString(): String = "<native fn>"
+        })
+    }
+
     fun interpret(statements: List<Stmt>): Unit {
         try {
             statements.forEach { statement ->
@@ -123,6 +142,25 @@ class Interpreter(var environment: Environment = Environment()) : Expr.Visitor<A
                     TokenType.EQUAL_EQUAL -> isEqual(left, right)
                     else -> throw RuntimeError(operator, "unknown operator for types")
                 }
+        }
+    }
+
+    override fun visitCall(expr: Expr.Call): Any? {
+        val callee: Any? = evaluate(expr.callee)
+        val arguments: MutableList<Any?> = mutableListOf()
+
+        for (argument in expr.arguments) {
+            arguments.add(evaluate(argument))
+        }
+
+        return when (callee) {
+            is LoxCallable ->
+                if (arguments.size != callee.arity())
+                    throw RuntimeError(expr.paren, "Expected ${callee.arity()} arguments but got ${arguments.size}.")
+                else
+                    callee.call(this, arguments)
+
+            else -> throw RuntimeError(expr.paren, "Can only call functions and classes.")
         }
     }
 

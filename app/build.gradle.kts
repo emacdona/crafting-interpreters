@@ -94,6 +94,14 @@ the<ProductionClassGeneratorExtension>().apply {
                         )
                     ),
                     ProductionClass(
+                        "Call",
+                        listOf(
+                            Field(expBaseClassName, "callee"),
+                            Field("Token", "paren"),
+                            Field(listOfType(expBaseClassName), "arguments")
+                        )
+                    ),
+                    ProductionClass(
                         "Grouping",
                         listOf(
                             Field(expBaseClassName, "expression")

@@ -69,6 +69,9 @@ class AstPrinter : Expr.Visitor<String>, Stmt.Visitor<String> {
     override fun visitBinary(it: Expr.Binary): String =
         parenthesize(it.operator.lexeme, it.left, it.right)
 
+    override fun visitCall(it: Expr.Call): String =
+        parenthesize(it.callee.accept(this), it.arguments)
+
     override fun visitGrouping(it: Expr.Grouping): String =
         parenthesize("group", it.expression)
 
