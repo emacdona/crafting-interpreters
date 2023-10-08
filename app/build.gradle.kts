@@ -68,6 +68,13 @@ the<ProductionClassGeneratorExtension>().apply {
                         )
                     ),
                     ProductionClass(
+                        "Return",
+                        listOf(
+                            Field("Token", "keyword"),
+                            Field(nullableOfType(expBaseClassName), "value")
+                        )
+                    ),
+                    ProductionClass(
                         "While",
                         listOf(
                             Field(expBaseClassName, "condition"),

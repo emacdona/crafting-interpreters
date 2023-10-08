@@ -16,11 +16,15 @@ class LoxFunction(private val declaration: Stmt.Function) : LoxCallable {
     override fun call(interpreter: Interpreter, arguments: List<Any?>): Any? {
         val environment = Environment(interpreter.globals)
 
-        (declaration.params zip arguments).forEach{(param, argument) ->
+        (declaration.params zip arguments).forEach { (param, argument) ->
             environment.define(param.lexeme, argument)
         }
 
-        interpreter.executeBlock(declaration.body, environment)
+        try {
+            interpreter.executeBlock(declaration.body, environment)
+        } catch (returnValue: Return) {
+            return returnValue.value
+        }
         return null
     }
 
@@ -28,6 +32,8 @@ class LoxFunction(private val declaration: Stmt.Function) : LoxCallable {
 
     override fun toString(): String = "<fn ${declaration.name.lexeme}>"
 }
+
+class Return(val value: Any?) : RuntimeException(null, null, false, false)
 
 class Interpreter(
     val globals: Environment = Environment(),
@@ -123,6 +129,9 @@ class Interpreter(
     override fun visitPrint(stmt: Stmt.Print) {
         println(stringify(evaluate(stmt.expression)))
     }
+
+    override fun visitReturn(stmt: Stmt.Return) =
+        throw Return(stmt.value?.let { evaluate(it) })
 
     override fun visitAssign(expr: Expr.Assign): Any? =
         evaluate(expr.value).also { value ->
