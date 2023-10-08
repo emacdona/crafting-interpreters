@@ -58,6 +58,20 @@ class AstPrinter : Expr.Visitor<String>, Stmt.Visitor<String> {
         return it.expression.accept(this)
     }
 
+    override fun visitFunction(it: Stmt.Function): String {
+        return parenthesize(
+            mutableListOf(
+                "fun",
+                it.name.lexeme,
+                "[",
+            ).also {list ->
+                list += it.params.map { it.lexeme }
+                list += "]"
+                list += Stmt.Block(it.body).accept(this)
+            }
+        )
+    }
+
     override fun visitPrint(it: Stmt.Print): String {
         return parenthesize("print", it.expression)
     }
@@ -98,11 +112,13 @@ class AstPrinter : Expr.Visitor<String>, Stmt.Visitor<String> {
         parenthesize(listOf("var", it.name.lexeme), it.initializer)
 
     override fun visitWhile(it: Stmt.While): String =
-        parenthesize(listOf(
-            "while",
-            it.condition.accept(this),
-            it.body.accept(this)
-        ))
+        parenthesize(
+            listOf(
+                "while",
+                it.condition.accept(this),
+                it.body.accept(this)
+            )
+        )
 
     override fun visitVariable(it: Expr.Variable): String = it.name.lexeme
 }

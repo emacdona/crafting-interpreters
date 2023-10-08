@@ -56,3 +56,10 @@ for(var i=0; i<2; i = i+1){
 }
 
 print clock();
+
+fun printsum(a, b){
+   print "the sum is: ";
+   print a + b;
+}
+
+printsum(5, 10);

@@ -12,8 +12,25 @@ interface LoxCallable {
     fun arity(): Int
 }
 
+class LoxFunction(private val declaration: Stmt.Function) : LoxCallable {
+    override fun call(interpreter: Interpreter, arguments: List<Any?>): Any? {
+        val environment = Environment(interpreter.globals)
+
+        (declaration.params zip arguments).forEach{(param, argument) ->
+            environment.define(param.lexeme, argument)
+        }
+
+        interpreter.executeBlock(declaration.body, environment)
+        return null
+    }
+
+    override fun arity(): Int = declaration.params.size
+
+    override fun toString(): String = "<fn ${declaration.name.lexeme}>"
+}
+
 class Interpreter(
-    private val globals: Environment = Environment(),
+    val globals: Environment = Environment(),
     private var environment: Environment = globals
 ) : Expr.Visitor<Any?>, Stmt.Visitor<Unit> {
 
@@ -83,7 +100,7 @@ class Interpreter(
     override fun visitBlock(it: Stmt.Block) =
         executeBlock(it.statements, Environment(environment))
 
-    private fun executeBlock(statements: List<Stmt>, environment: Environment): Unit {
+    fun executeBlock(statements: List<Stmt>, environment: Environment): Unit {
         val previous = this.environment
         try {
             this.environment = environment
@@ -97,6 +114,10 @@ class Interpreter(
 
     override fun visitExpression(stmt: Stmt.Expression) {
         evaluate(stmt.expression)
+    }
+
+    override fun visitFunction(stmt: Stmt.Function) {
+        environment.define(stmt.name.lexeme, LoxFunction(stmt))
     }
 
     override fun visitPrint(stmt: Stmt.Print) {

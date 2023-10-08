@@ -54,6 +54,14 @@ the<ProductionClassGeneratorExtension>().apply {
                         )
                     ),
                     ProductionClass(
+                        "Function",
+                        listOf(
+                            Field("Token", "name"),
+                            Field(listOfType("Token"), "params"),
+                            Field(listOfType(stmtBaseClassName), "body")
+                        )
+                    ),
+                    ProductionClass(
                         "Print",
                         listOf(
                             Field(expBaseClassName, "expression")
