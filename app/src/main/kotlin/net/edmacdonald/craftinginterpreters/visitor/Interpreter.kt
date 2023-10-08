@@ -12,9 +12,12 @@ interface LoxCallable {
     fun arity(): Int
 }
 
-class LoxFunction(private val declaration: Stmt.Function) : LoxCallable {
+class LoxFunction(
+    private val declaration: Stmt.Function,
+    private val closure: Environment
+) : LoxCallable {
     override fun call(interpreter: Interpreter, arguments: List<Any?>): Any? {
-        val environment = Environment(interpreter.globals)
+        val environment = Environment(closure)
 
         (declaration.params zip arguments).forEach { (param, argument) ->
             environment.define(param.lexeme, argument)
@@ -123,7 +126,7 @@ class Interpreter(
     }
 
     override fun visitFunction(stmt: Stmt.Function) {
-        environment.define(stmt.name.lexeme, LoxFunction(stmt))
+        environment.define(stmt.name.lexeme, LoxFunction(stmt, environment))
     }
 
     override fun visitPrint(stmt: Stmt.Print) {
