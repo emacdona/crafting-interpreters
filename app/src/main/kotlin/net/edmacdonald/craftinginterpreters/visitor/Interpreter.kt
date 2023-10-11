@@ -40,7 +40,8 @@ class Return(val value: Any?) : RuntimeException(null, null, false, false)
 
 class Interpreter(
     val globals: Environment = Environment(),
-    private var environment: Environment = globals
+    private var environment: Environment = globals,
+    private val locals: MutableMap<Expr, Int> = mutableMapOf()
 ) : Expr.Visitor<Any?>, Stmt.Visitor<Unit> {
 
     init {
@@ -65,6 +66,10 @@ class Interpreter(
 
     private fun execute(stmt: Stmt): Unit {
         stmt.accept(this)
+    }
+
+    fun resolve(expr: Expr, depth: Int): Unit {
+        locals[expr] = depth
     }
 
     fun stringify(o: Any?): String =
@@ -97,7 +102,12 @@ class Interpreter(
         }
     }
 
-    override fun visitVariable(expr: Expr.Variable): Any? = environment.get(expr.name)
+    override fun visitVariable(expr: Expr.Variable): Any? = lookUpVariable(expr.name, expr)
+
+    private fun lookUpVariable(name: Token, expr: Expr): Any? =
+        locals[expr]?.let { distance ->
+            environment.getAt(distance, name.lexeme)
+        } ?: globals.get(name)
 
     override fun visitIf(it: Stmt.If) {
         if (isTruthy(evaluate(it.condition)))
@@ -138,7 +148,9 @@ class Interpreter(
 
     override fun visitAssign(expr: Expr.Assign): Any? =
         evaluate(expr.value).also { value ->
-            environment.assign(expr.name, value)
+            locals.get(expr)?.let { distance ->
+                environment.assignAt(distance, expr.name, value)
+            } ?: globals.assign(expr.name, value)
         }
 
     override fun visitBinary(expr: Expr.Binary): Any? = expr.run {

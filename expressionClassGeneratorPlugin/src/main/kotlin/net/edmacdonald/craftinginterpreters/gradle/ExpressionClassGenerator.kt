@@ -84,7 +84,9 @@ abstract class ProductionClassGeneratorPlugin : Plugin<Project> {
                             ${
                             classes.map {
                             """
-                            data class ${it.name} (${
+                            // Note: 'data' class not used here because the Resolver pass requires EACH parsed expression/statement to be unique.
+                            // IE: It expects objects to be compared by identity.
+                            class ${it.name} (${
                                 it.fields.map {
                                 """
                                 val ${it.name}: ${it.type}

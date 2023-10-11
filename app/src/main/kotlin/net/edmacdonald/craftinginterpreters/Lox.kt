@@ -6,6 +6,7 @@ import net.edmacdonald.craftinginterpreters.scanner.Token
 import net.edmacdonald.craftinginterpreters.scanner.TokenType
 import net.edmacdonald.craftinginterpreters.visitor.AstPrinter
 import net.edmacdonald.craftinginterpreters.visitor.Interpreter
+import net.edmacdonald.craftinginterpreters.visitor.Resolver
 import net.edmacdonald.craftinginterpreters.visitor.RuntimeError
 import java.io.BufferedReader
 import java.io.InputStreamReader
@@ -72,11 +73,10 @@ fun runPrompt() {
             val line = reader.readLine() ?: break
             run(line)
             Lox.hadError = false
-        }
-        catch (e: Exception ){
-            when(e){
-               is ParseException, is RuntimeException -> println("ERROR: ${e.message}")
-               else -> throw e
+        } catch (e: Exception) {
+            when (e) {
+                is ParseException, is RuntimeException -> println("ERROR: ${e.message}")
+                else -> throw e
             }
         }
     }
@@ -89,12 +89,18 @@ fun run(source: String) {
         println()
 
         Parser(tokens).parse().let { statements ->
-            if(Lox.hadError) return
+            if (Lox.hadError) return
 
             println("Parsed:")
             println("\t${AstPrinter().print(statements!!)}")
             println("Evaluated:")
-            println("\t${Interpreter().interpret(statements!!)}")
+
+            println("\t${
+                Interpreter().let { interpreter ->
+                    Resolver(interpreter).resolve(statements)
+                    interpreter.interpret(statements)
+                }
+            }")
         }
     }
 }
@@ -102,6 +108,7 @@ fun run(source: String) {
 fun error(line: Int, message: String) {
     report(line, "", message)
 }
+
 fun runtimeError(error: RuntimeError) {
     System.err.println(
         """

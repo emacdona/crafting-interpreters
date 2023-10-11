@@ -4,16 +4,26 @@ import net.edmacdonald.craftinginterpreters.Lox
 import net.edmacdonald.craftinginterpreters.parser.Expr
 import net.edmacdonald.craftinginterpreters.parser.Stmt
 import net.edmacdonald.craftinginterpreters.scanner.Token
-import java.util.Stack
+import java.util.*
 
 class Resolver(
     private val interpreter: Interpreter,
     private val scopes: Stack<MutableMap<String, Boolean>> = Stack<MutableMap<String, Boolean>>()
 ) : Expr.Visitor<Unit>, Stmt.Visitor<Unit> {
 
-    private fun resolve(statements: List<Stmt>) = statements.forEach { resolve(it) }
+    fun resolve(statements: List<Stmt>) = statements.forEach { resolve(it) }
     private fun resolve(stmt: Stmt) = stmt.accept(this)
     private fun resolve(expr: Expr) = expr.accept(this)
+    private fun resolveFunction(function: Stmt.Function) {
+        beginScope()
+        function.params.forEach { param ->
+            declare(param)
+            define(param)
+        }
+        resolve(function.body)
+        endScope()
+    }
+
     private fun beginScope() = scopes.push(HashMap())
     private fun endScope() = scopes.pop()
     private fun declare(name: Token) {
@@ -26,14 +36,18 @@ class Resolver(
             scopes.peek()[name.lexeme] = true
     }
 
-    private fun resolveLocal(expr: Expr, name: Token){
-        for(i in scopes.lastIndex downTo 0){
-            if(scopes.get(i).containsKey(name.lexeme))
+    private fun resolveLocal(expr: Expr, name: Token) {
+        for (i in scopes.lastIndex downTo 0) {
+            if (scopes.get(i).containsKey(name.lexeme))
                 interpreter.resolve(expr, scopes.lastIndex - i)
         }
     }
 
-    override fun visitIf(it: Stmt.If) {}
+    override fun visitIf(stmt: Stmt.If) {
+        resolve(stmt.condition)
+        resolve(stmt.thenBranch)
+        stmt.elseBranch?.also { resolve(it) }
+    }
 
     override fun visitBlock(stmt: Stmt.Block) {
         beginScope()
@@ -41,15 +55,24 @@ class Resolver(
         endScope()
     }
 
-    override fun visitExpression(it: Stmt.Expression) {}
+    override fun visitExpression(it: Stmt.Expression) = resolve(it.expression)
 
-    override fun visitFunction(it: Stmt.Function) {}
+    override fun visitFunction(stmt: Stmt.Function) {
+        declare(stmt.name)
+        define(stmt.name)
+        resolveFunction(stmt)
+    }
 
-    override fun visitPrint(it: Stmt.Print) {}
+    override fun visitPrint(stmt: Stmt.Print) = resolve(stmt.expression)
 
-    override fun visitReturn(it: Stmt.Return) {}
+    override fun visitReturn(stmt: Stmt.Return) {
+        stmt.value?.let { resolve(it) }
+    }
 
-    override fun visitWhile(it: Stmt.While) {}
+    override fun visitWhile(stmt: Stmt.While) {
+        resolve(stmt.condition)
+        resolve(stmt.body)
+    }
 
     override fun visitVar(stmt: Stmt.Var) {
         declare(stmt.name)
@@ -57,19 +80,33 @@ class Resolver(
         define(stmt.name)
     }
 
-    override fun visitAssign(it: Expr.Assign) {}
+    override fun visitAssign(it: Expr.Assign) {
+        resolve(it.value)
+        resolveLocal(it, it.name)
+    }
 
-    override fun visitBinary(it: Expr.Binary) {}
+    override fun visitBinary(expr: Expr.Binary) {
+        resolve(expr.left)
+        resolve(expr.right)
+    }
 
-    override fun visitCall(it: Expr.Call) {}
+    override fun visitCall(expr: Expr.Call) {
+        resolve(expr.callee)
+        for (argument: Expr in expr.arguments) {
+            resolve(argument)
+        }
+    }
 
-    override fun visitGrouping(it: Expr.Grouping) {}
+    override fun visitGrouping(expr: Expr.Grouping) = resolve(expr.expression)
 
     override fun visitLiteral(it: Expr.Literal) {}
 
-    override fun visitLogical(it: Expr.Logical) {}
+    override fun visitLogical(expr: Expr.Logical) {
+        resolve(expr.left)
+        resolve(expr.right)
+    }
 
-    override fun visitUnary(it: Expr.Unary) {}
+    override fun visitUnary(expr: Expr.Unary) = resolve(expr.right)
 
     override fun visitVariable(expr: Expr.Variable) {
         if (!scopes.isEmpty() &&
