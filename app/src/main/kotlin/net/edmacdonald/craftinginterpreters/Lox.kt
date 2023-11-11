@@ -98,6 +98,9 @@ fun run(source: String) {
             println("\t${
                 Interpreter().let { interpreter ->
                     Resolver(interpreter).resolve(statements)
+                    
+                    if(Lox.hadError) return
+                    
                     interpreter.interpret(statements)
                 }
             }")

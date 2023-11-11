@@ -6,15 +6,22 @@ import net.edmacdonald.craftinginterpreters.parser.Stmt
 import net.edmacdonald.craftinginterpreters.scanner.Token
 import java.util.*
 
+enum class FunctionType {
+    NONE, FUNCTION
+}
 class Resolver(
     private val interpreter: Interpreter,
-    private val scopes: Stack<MutableMap<String, Boolean>> = Stack<MutableMap<String, Boolean>>()
+    private val scopes: Stack<MutableMap<String, Boolean>> = Stack<MutableMap<String, Boolean>>(),
+    private var currentFunction: FunctionType = FunctionType.NONE
 ) : Expr.Visitor<Unit>, Stmt.Visitor<Unit> {
 
     fun resolve(statements: List<Stmt>) = statements.forEach { resolve(it) }
     private fun resolve(stmt: Stmt) = stmt.accept(this)
     private fun resolve(expr: Expr) = expr.accept(this)
-    private fun resolveFunction(function: Stmt.Function) {
+    private fun resolveFunction(function: Stmt.Function, type: FunctionType) {
+        val enclosingFunction = currentFunction
+        currentFunction = type
+
         beginScope()
         function.params.forEach { param ->
             declare(param)
@@ -22,13 +29,20 @@ class Resolver(
         }
         resolve(function.body)
         endScope()
+
+        currentFunction = enclosingFunction
     }
 
     private fun beginScope() = scopes.push(HashMap())
     private fun endScope() = scopes.pop()
     private fun declare(name: Token) {
-        if (!scopes.empty())
-            scopes.peek()[name.lexeme] = false
+        if (!scopes.empty()) {
+            val scope = scopes.peek()
+            if(scope.containsKey(name.lexeme)){
+                Lox.error(name, "Already a variable with this name in this scope.")
+            }
+            scope[name.lexeme] = false
+        }
     }
 
     private fun define(name: Token) {
@@ -60,12 +74,15 @@ class Resolver(
     override fun visitFunction(stmt: Stmt.Function) {
         declare(stmt.name)
         define(stmt.name)
-        resolveFunction(stmt)
+        resolveFunction(stmt, FunctionType.FUNCTION)
     }
 
     override fun visitPrint(stmt: Stmt.Print) = resolve(stmt.expression)
 
     override fun visitReturn(stmt: Stmt.Return) {
+        if(currentFunction == FunctionType.NONE){
+            Lox.error(stmt.keyword, "Can't return from top-level code.")
+        }
         stmt.value?.let { resolve(it) }
     }
 

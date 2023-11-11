@@ -97,3 +97,13 @@ var a = "global";
    var a = "block";
    showA();
 }
+
+// Error: re-declaration of variable in same scope
+//{
+//    var a = "foo";
+//    var a = "bar";
+//    print a;
+//}
+
+// Error: top-level return
+// return "foo";
