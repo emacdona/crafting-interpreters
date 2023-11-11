@@ -98,6 +98,13 @@ var a = "global";
    showA();
 }
 
+fun greet(name){
+    print "Hello";
+    print name;
+}
+
+greet("Ed");
+
 // Error: re-declaration of variable in same scope
 //{
 //    var a = "foo";
