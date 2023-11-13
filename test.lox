@@ -114,3 +114,29 @@ greet("Ed");
 
 // Error: top-level return
 // return "foo";
+
+class Bagel {}
+var bagel = Bagel();
+print Bagel;
+print bagel;
+
+class Bacon {
+   eat() {
+      print "crunch crunch crunch.";
+   }
+}
+
+Bacon().eat();
+
+class Cake {
+   taste() {
+      var adjective = "delicious";
+      print "The " + this.flavor + " cake is " + adjective + "!";
+   }
+}
+var cake = Cake();
+cake.flavor = "German chocolate";
+cake.taste(); // Prints "The German chocolate cake is delicious!".
+
+// Error: Can't use this outside of class
+// this;

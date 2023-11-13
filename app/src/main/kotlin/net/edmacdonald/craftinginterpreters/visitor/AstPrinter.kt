@@ -54,6 +54,11 @@ class AstPrinter : Expr.Visitor<String>, Stmt.Visitor<String> {
         )
     }
 
+    override fun visitClass(it: Stmt.Class): String {
+        // TODO: Implement
+        return "not implemented"
+    }
+
     override fun visitExpression(it: Stmt.Expression): String {
         return it.expression.accept(this)
     }
@@ -90,6 +95,11 @@ class AstPrinter : Expr.Visitor<String>, Stmt.Visitor<String> {
     override fun visitCall(it: Expr.Call): String =
         parenthesize(it.callee.accept(this), it.arguments)
 
+    override fun visitGet(it: Expr.Get): String {
+        // TODO: Implement
+        return "Not implemented"
+    }
+
     override fun visitGrouping(it: Expr.Grouping): String =
         parenthesize("group", it.expression)
 
@@ -108,6 +118,16 @@ class AstPrinter : Expr.Visitor<String>, Stmt.Visitor<String> {
                 it.right.accept(this)
             )
         )
+
+    override fun visitSet(it: Expr.Set): String {
+        // TODO: Implement
+        return "not implemented"
+    }
+
+    override fun visitThis(it: Expr.This): String {
+        // TODO: Implement
+        return "not implemented"
+    }
 
     override fun visitUnary(it: Expr.Unary): String =
         parenthesize(it.operator.lexeme, it.right)

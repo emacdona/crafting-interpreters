@@ -23,6 +23,7 @@ class Parser(val tokens: List<Token>) {
     private fun declaration(): Stmt? =
         try {
             when {
+                match(CLASS) -> classDeclaration()
                 match(FUN) -> function("function")
                 match(VAR) -> varDeclaration()
                 else -> statement()
@@ -31,6 +32,19 @@ class Parser(val tokens: List<Token>) {
             synchronize()
             null
         }
+
+    private fun classDeclaration(): Stmt? {
+        val name = consume(IDENTIFIER, "Expect class name.")
+        consume(LEFT_BRACE, "Expect '{' before class body.")
+
+        val methods = mutableListOf<Stmt.Function>()
+        while (!check(RIGHT_BRACE) && !isAtEnd()) {
+            methods.add(function("method"))
+        }
+        consume(RIGHT_BRACE, "Expect '}' after class body.")
+
+        return Stmt.Class(name, methods)
+    }
 
     private fun varDeclaration(): Stmt {
         val name: Token = consume(IDENTIFIER, "Expect variable name.")
@@ -134,7 +148,7 @@ class Parser(val tokens: List<Token>) {
     private fun returnStatement(): Stmt {
         val keyword = previous()
         var value: Expr? = null
-        if(!check(SEMICOLON)){
+        if (!check(SEMICOLON)) {
             value = expression()
         }
         consume(SEMICOLON, "Expect ';' after return value.")
@@ -151,13 +165,13 @@ class Parser(val tokens: List<Token>) {
         val name = consume(IDENTIFIER, "Expect ${kind} name.")
         consume(LEFT_PAREN, "Expect '(' after ${kind} name.")
         val parameters = mutableListOf<Token>()
-        if(!check(RIGHT_PAREN)){
-            do{
-                if(parameters.size >= 255){
+        if (!check(RIGHT_PAREN)) {
+            do {
+                if (parameters.size >= 255) {
                     error(peek(), "Can't have more than 255 parameters.")
                 }
                 parameters += consume(IDENTIFIER, "Expect parameter name.")
-            }while (match(COMMA))
+            } while (match(COMMA))
         }
         consume(RIGHT_PAREN, "Expect ')' after parameters.")
         consume(LEFT_BRACE, "Expect '{' before ${kind} body.")
@@ -177,6 +191,11 @@ class Parser(val tokens: List<Token>) {
                     is Expr.Variable -> {
                         val name = expr.name
                         return Expr.Assign(name, value)
+                    }
+
+                    is Expr.Get -> {
+                        val get = expr;
+                        return Expr.Set(get.obj, get.name, value)
                     }
 
                     else -> error(equals, "Invalid assignment target.")
@@ -294,6 +313,9 @@ class Parser(val tokens: List<Token>) {
         while (true) {
             if (match(LEFT_PAREN)) {
                 expr = finishCall(expr)
+            } else if (match(DOT)) {
+                val name = consume(IDENTIFIER, "Expect property name after '.'.")
+                expr = Expr.Get(expr, name)
             } else {
                 break
             }
@@ -323,6 +345,7 @@ class Parser(val tokens: List<Token>) {
         if (match(TRUE)) return Expr.Literal(true)
         if (match(NIL)) return Expr.Literal(null)
         if (match(NUMBER, STRING)) return Expr.Literal(previous().literal)
+        if (match(THIS)) return Expr.This(previous())
         if (match(IDENTIFIER)) return Expr.Variable(previous())
 
         if (match(LEFT_PAREN)) {

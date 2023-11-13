@@ -5,14 +5,21 @@ import net.edmacdonald.craftinginterpreters.parser.Expr
 import net.edmacdonald.craftinginterpreters.parser.Stmt
 import net.edmacdonald.craftinginterpreters.scanner.Token
 import java.util.*
+import kotlin.math.exp
 
 enum class FunctionType {
-    NONE, FUNCTION
+    NONE, FUNCTION, INITIALIZER, METHOD
 }
+
+enum class ClassType {
+    NONE, CLASS
+}
+
 class Resolver(
     private val interpreter: Interpreter,
     private val scopes: Stack<MutableMap<String, Boolean>> = Stack<MutableMap<String, Boolean>>(),
-    private var currentFunction: FunctionType = FunctionType.NONE
+    private var currentFunction: FunctionType = FunctionType.NONE,
+    private var currentClass: ClassType = ClassType.NONE
 ) : Expr.Visitor<Unit>, Stmt.Visitor<Unit> {
 
     fun resolve(statements: List<Stmt>) = statements.forEach { resolve(it) }
@@ -38,7 +45,7 @@ class Resolver(
     private fun declare(name: Token) {
         if (!scopes.empty()) {
             val scope = scopes.peek()
-            if(scope.containsKey(name.lexeme)){
+            if (scope.containsKey(name.lexeme)) {
                 Lox.error(name, "Already a variable with this name in this scope.")
             }
             scope[name.lexeme] = false
@@ -69,6 +76,28 @@ class Resolver(
         endScope()
     }
 
+    override fun visitClass(stmt: Stmt.Class) {
+        val enclosingClass = currentClass
+        currentClass = ClassType.CLASS
+        declare(stmt.name)
+        define(stmt.name)
+
+        beginScope()
+        scopes.peek().put("this", true)
+
+        stmt.methods.forEach { method ->
+            val declaration = if (method.name.lexeme.equals("init")) {
+                FunctionType.INITIALIZER
+            } else {
+                FunctionType.METHOD
+            }
+            resolveFunction(method, declaration)
+        }
+
+        endScope()
+        currentClass = enclosingClass
+    }
+
     override fun visitExpression(it: Stmt.Expression) = resolve(it.expression)
 
     override fun visitFunction(stmt: Stmt.Function) {
@@ -80,10 +109,16 @@ class Resolver(
     override fun visitPrint(stmt: Stmt.Print) = resolve(stmt.expression)
 
     override fun visitReturn(stmt: Stmt.Return) {
-        if(currentFunction == FunctionType.NONE){
+        if (currentFunction == FunctionType.NONE) {
             Lox.error(stmt.keyword, "Can't return from top-level code.")
         }
-        stmt.value?.let { resolve(it) }
+        stmt.value?.let {
+            if (currentFunction == FunctionType.INITIALIZER) {
+                Lox.error(stmt.keyword, "Can't return a value from an initializer.")
+            } else {
+                resolve(it)
+            }
+        }
     }
 
     override fun visitWhile(stmt: Stmt.While) {
@@ -114,6 +149,10 @@ class Resolver(
         }
     }
 
+    override fun visitGet(expr: Expr.Get) {
+        resolve(expr.obj)
+    }
+
     override fun visitGrouping(expr: Expr.Grouping) = resolve(expr.expression)
 
     override fun visitLiteral(it: Expr.Literal) {}
@@ -121,6 +160,19 @@ class Resolver(
     override fun visitLogical(expr: Expr.Logical) {
         resolve(expr.left)
         resolve(expr.right)
+    }
+
+    override fun visitSet(expr: Expr.Set) {
+        resolve(expr.value)
+        resolve(expr.obj)
+    }
+
+    override fun visitThis(expr: Expr.This) {
+        if (currentClass == ClassType.NONE) {
+            Lox.error(expr.keyword, "Can't use 'this' outside of a class.")
+        } else {
+            resolveLocal(expr, expr.keyword)
+        }
     }
 
     override fun visitUnary(expr: Expr.Unary) = resolve(expr.right)

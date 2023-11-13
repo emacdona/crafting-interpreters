@@ -48,6 +48,13 @@ the<ProductionClassGeneratorExtension>().apply {
                         )
                     ),
                     ProductionClass(
+                        "Class",
+                        listOf(
+                            Field("Token", "name"),
+                            Field(listOfType("Stmt.Function"), "methods")
+                        )
+                    ),
+                    ProductionClass(
                         "Expression",
                         listOf(
                             Field(expBaseClassName, "expression")
@@ -117,6 +124,13 @@ the<ProductionClassGeneratorExtension>().apply {
                         )
                     ),
                     ProductionClass(
+                        "Get",
+                        listOf(
+                            Field(expBaseClassName, "obj"),
+                            Field("Token", "name")
+                        )
+                    ),
+                    ProductionClass(
                         "Grouping",
                         listOf(
                             Field(expBaseClassName, "expression")
@@ -134,6 +148,20 @@ the<ProductionClassGeneratorExtension>().apply {
                             Field(expBaseClassName, "left"),
                             Field("Token", "operator"),
                             Field(expBaseClassName, "right")
+                        )
+                    ),
+                    ProductionClass(
+                        "Set",
+                        listOf(
+                            Field(expBaseClassName, "obj"),
+                            Field("Token", "name"),
+                            Field(expBaseClassName, "value")
+                        )
+                    ),
+                    ProductionClass(
+                        "This",
+                        listOf(
+                            Field("Token", "keyword")
                         )
                     ),
                     ProductionClass(

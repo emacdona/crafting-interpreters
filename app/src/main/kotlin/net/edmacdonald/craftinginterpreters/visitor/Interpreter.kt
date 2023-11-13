@@ -12,10 +12,72 @@ interface LoxCallable {
     fun arity(): Int
 }
 
+class LoxClass(val name: String, val methods: Map<String, LoxFunction>) : LoxCallable {
+
+    fun findMethod(name: String): LoxFunction? {
+        if (methods.containsKey(name)) {
+            return methods[name]
+        } else {
+            return null
+        }
+    }
+
+    override fun call(interpreter: Interpreter, arguments: List<Any?>): Any? {
+        val instance = LoxInstance(this)
+        val initializer = findMethod("init")
+
+        if (initializer != null) {
+            initializer.bind(instance).call(interpreter, arguments)
+        }
+
+        return instance
+    }
+
+    override fun arity(): Int {
+        val initializer = findMethod("init")
+        if (initializer == null) return 0
+        return initializer.arity()
+    }
+
+    override fun toString(): String = name
+}
+
+class LoxInstance(
+    val klazz: LoxClass, val
+    fields: MutableMap<String, Any?> = mutableMapOf()
+) {
+    override fun toString() = "${klazz.name} instance"
+
+    fun get(name: Token): Any? {
+        if (fields.containsKey(name.lexeme)) {
+            return fields[name.lexeme]
+        }
+
+        val method = klazz.findMethod(name.lexeme)
+        if (method != null) {
+            return method.bind(this)
+        }
+
+        throw RuntimeError(name, "Undefined property '${name.lexeme}'.")
+    }
+
+    fun set(name: Token, value: Any?) {
+        fields.put(name.lexeme, value)
+    }
+}
+
 class LoxFunction(
     private val declaration: Stmt.Function,
-    private val closure: Environment
+    private val closure: Environment,
+    private val isInitializer: Boolean
 ) : LoxCallable {
+
+    fun bind(instance: LoxInstance): LoxFunction {
+        val environment = Environment(closure)
+        environment.define("this", instance)
+        return LoxFunction(declaration, environment, isInitializer)
+    }
+
     override fun call(interpreter: Interpreter, arguments: List<Any?>): Any? {
         val environment = Environment(closure)
 
@@ -26,8 +88,13 @@ class LoxFunction(
         try {
             interpreter.executeBlock(declaration.body, environment)
         } catch (returnValue: Return) {
-            return returnValue.value
+            return if (isInitializer) {
+                closure.getAt(0, "this")
+            } else {
+                returnValue.value
+            }
         }
+        if (isInitializer) return closure.getAt(0, "this")
         return null
     }
 
@@ -119,6 +186,20 @@ class Interpreter(
     override fun visitBlock(it: Stmt.Block) =
         executeBlock(it.statements, Environment(environment))
 
+    override fun visitClass(stmt: Stmt.Class) {
+        environment.define(stmt.name.lexeme, null)
+
+        val methods: MutableMap<String, LoxFunction> = mutableMapOf()
+
+        stmt.methods.forEach { method ->
+            val function = LoxFunction(method, environment, method.name.lexeme.equals("init"))
+            methods[method.name.lexeme] = function
+        }
+
+        val klass = LoxClass(stmt.name.lexeme, methods)
+        environment.assign(stmt.name, klass)
+    }
+
     fun executeBlock(statements: List<Stmt>, environment: Environment): Unit {
         val previous = this.environment
         try {
@@ -136,7 +217,7 @@ class Interpreter(
     }
 
     override fun visitFunction(stmt: Stmt.Function) {
-        environment.define(stmt.name.lexeme, LoxFunction(stmt, environment))
+        environment.define(stmt.name.lexeme, LoxFunction(stmt, environment, false))
     }
 
     override fun visitPrint(stmt: Stmt.Print) {
@@ -209,6 +290,15 @@ class Interpreter(
         }
     }
 
+    override fun visitGet(expr: Expr.Get): Any? {
+        val obj = evaluate(expr.obj)
+
+        when {
+            (obj is LoxInstance) -> return obj.get(expr.name)
+            else -> throw RuntimeError(expr.name, "Only instances have properties.")
+        }
+    }
+
     private fun isEqual(a: Any?, b: Any?): Boolean =
         when {
             (a == null && b == null) -> true
@@ -235,6 +325,21 @@ class Interpreter(
             }
         }
     }
+
+    override fun visitSet(expr: Expr.Set): Any? {
+        val obj = evaluate(expr.obj)
+
+        if (obj is LoxInstance) {
+            val value = evaluate(expr.value)
+            obj.set(expr.name, value)
+            return value
+        } else {
+            throw RuntimeError(expr.name, "Only instances have fields.")
+        }
+    }
+
+    override fun visitThis(expr: Expr.This): Any? =
+        lookUpVariable(expr.keyword, expr)
 
     override fun visitUnary(expr: Expr.Unary): Any? {
         val right = evaluate(expr.right)
