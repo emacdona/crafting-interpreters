@@ -129,14 +129,17 @@ class Bacon {
 Bacon().eat();
 
 class Cake {
+   init(adjective){
+      this.adjective = adjective;
+   }
+
    taste() {
-      var adjective = "delicious";
-      print "The " + this.flavor + " cake is " + adjective + "!";
+      print "The " + this.flavor + " cake is " + this.adjective + "!";
    }
 }
-var cake = Cake();
+var cake = Cake("tasty");
 cake.flavor = "German chocolate";
-cake.taste(); // Prints "The German chocolate cake is delicious!".
+cake.taste(); // Prints "The German chocolate cake is tasty!".
 
 // Error: Can't use this outside of class
 // this;
