@@ -143,3 +143,32 @@ cake.taste(); // Prints "The German chocolate cake is tasty!".
 
 // Error: Can't use this outside of class
 // this;
+
+
+class Donut {
+    cook(){
+        print "Fry until golden brown.";
+    }
+}
+
+class BostonCream < Donut {}
+BostonCream().cook();
+
+
+class A {
+    method() { print "A method"; }
+}
+class B < A {
+    method() { print "B method"; }
+    test() { super.method(); }
+}
+class C < B {}
+C().test(); //should call A.method()
+
+// Yields: "Error at 'super': Can't use 'super' in a class with no superclass."
+// class Eclair {
+//     cook(){
+//         super.cook();
+//         print "Pipe full of creme patissiere.";
+//     }
+// }

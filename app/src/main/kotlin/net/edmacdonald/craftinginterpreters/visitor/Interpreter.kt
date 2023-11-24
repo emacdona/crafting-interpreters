@@ -12,11 +12,13 @@ interface LoxCallable {
     fun arity(): Int
 }
 
-class LoxClass(val name: String, val methods: Map<String, LoxFunction>) : LoxCallable {
+class LoxClass(val name: String, val superclass: LoxClass?, val methods: Map<String, LoxFunction>) : LoxCallable {
 
     fun findMethod(name: String): LoxFunction? {
         if (methods.containsKey(name)) {
             return methods[name]
+        } else if (superclass != null) {
+            return superclass.findMethod(name)
         } else {
             return null
         }
@@ -187,7 +189,23 @@ class Interpreter(
         executeBlock(it.statements, Environment(environment))
 
     override fun visitClass(stmt: Stmt.Class) {
+        var superclass: Any? = null
+        if (stmt.superclass != null) {
+            superclass = evaluate(stmt.superclass)
+            if (!(superclass is LoxClass)) {
+                throw RuntimeError(
+                    stmt.superclass.name,
+                    "Superclass must be a class."
+                )
+            }
+        }
+
         environment.define(stmt.name.lexeme, null)
+
+        if (stmt.superclass != null) {
+            environment = Environment(environment)
+            environment.define("super", superclass)
+        }
 
         val methods: MutableMap<String, LoxFunction> = mutableMapOf()
 
@@ -196,7 +214,12 @@ class Interpreter(
             methods[method.name.lexeme] = function
         }
 
-        val klass = LoxClass(stmt.name.lexeme, methods)
+        val klass = LoxClass(stmt.name.lexeme, superclass as LoxClass?, methods)
+
+        if (superclass != null) {
+            environment = environment.enclosing!!
+        }
+
         environment.assign(stmt.name, klass)
     }
 
@@ -336,6 +359,20 @@ class Interpreter(
         } else {
             throw RuntimeError(expr.name, "Only instances have fields.")
         }
+    }
+
+    override fun visitSuper(expr: Expr.Super): Any? {
+        val distance = locals.get(expr)
+        val superclass = environment.getAt(distance!!, "super") as LoxClass
+        val obj = environment.getAt(distance - 1, "this") as LoxInstance
+        val method = superclass.findMethod(expr.method.lexeme)
+        if (method == null) {
+            throw RuntimeError(
+                expr.method,
+                "Undefined property '${expr.method.lexeme}'."
+            )
+        }
+        return method.bind(obj)
     }
 
     override fun visitThis(expr: Expr.This): Any? =

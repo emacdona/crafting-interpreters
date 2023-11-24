@@ -51,6 +51,7 @@ the<ProductionClassGeneratorExtension>().apply {
                         "Class",
                         listOf(
                             Field("Token", "name"),
+                            Field("Expr.Variable?", "superclass"),
                             Field(listOfType("Stmt.Function"), "methods")
                         )
                     ),
@@ -156,6 +157,13 @@ the<ProductionClassGeneratorExtension>().apply {
                             Field(expBaseClassName, "obj"),
                             Field("Token", "name"),
                             Field(expBaseClassName, "value")
+                        )
+                    ),
+                    ProductionClass(
+                        "Super",
+                        listOf(
+                            Field("Token", "keyword"),
+                            Field("Token", "method")
                         )
                     ),
                     ProductionClass(

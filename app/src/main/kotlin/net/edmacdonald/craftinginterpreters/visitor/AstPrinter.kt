@@ -124,6 +124,11 @@ class AstPrinter : Expr.Visitor<String>, Stmt.Visitor<String> {
         return "not implemented"
     }
 
+    override fun visitSuper(it: Expr.Super): String {
+        // TODO: Implement
+        return "not implemented"
+    }
+
     override fun visitThis(it: Expr.This): String {
         // TODO: Implement
         return "not implemented"
